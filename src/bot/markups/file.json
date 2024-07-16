@@ -1,0 +1,58 @@
+{
+  "message_id": 56,
+  "from": {
+    "id": 6954169058,
+    "is_bot": false,
+    "first_name": "UG",
+    "last_name": "Robotech",
+    "username": "ugrobotech",
+    "language_code": "en"
+  },
+  "chat": {
+    "id": 6954169058,
+    "first_name": "UG",
+    "last_name": "Robotech",
+    "username": "ugrobotech",
+    "type": "private"
+  },
+  "date": 1713356440,
+  "reply_to_message": {
+    "message_id": 55,
+    "from": {
+      "id": 7116110674,
+      "is_bot": true,
+      "first_name": "nkowa",
+      "username": "nkowa_Bot"
+    },
+    "chat": {
+      "id": 6954169058,
+      "first_name": "UG",
+      "last_name": "Robotech",
+      "username": "ugrobotech",
+      "type": "private"
+    },
+    "date": 1713356433,
+    "text": "Upload a PDF file 🔗: make sure it is less than 5mb"
+  },
+  "document": {
+    "file_name": "e634a72b-eaac-4371-84f3-08ef2fe4b6fd (1).pdf",
+    "mime_type": "application/pdf",
+    "thumbnail": {
+      "file_id": "AAMCBAADGQEAAzhmH76X3E9O_jhqGwoHLqFvR3hlkgACIhUAAhYr-FA3r1WgKm_p9gEAB20AAzQE",
+      "file_unique_id": "AQADIhUAAhYr-FBy",
+      "file_size": 14993,
+      "width": 247,
+      "height": 320
+    },
+    "thumb": {
+      "file_id": "AAMCBAADGQEAAzhmH76X3E9O_jhqGwoHLqFvR3hlkgACIhUAAhYr-FA3r1WgKm_p9gEAB20AAzQE",
+      "file_unique_id": "AQADIhUAAhYr-FBy",
+      "file_size": 14993,
+      "width": 247,
+      "height": 320
+    },
+    "file_id": "BQACAgQAAxkBAAM4Zh--l9xPTv44ahsKBy6hb0d4ZZIAAiIVAAIWK_hQN69VoCpv6fY0BA",
+    "file_unique_id": "AgADIhUAAhYr-FA",
+    "file_size": 44576
+  }
+}
