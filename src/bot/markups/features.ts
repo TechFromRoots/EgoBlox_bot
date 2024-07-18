@@ -4,7 +4,7 @@ export const allFeaturesMarkup = async () => {
     keyboard: [
       [
         {
-          text: 'Create an event Ticket 🎟️ Blink',
+          text: 'Create an event Ticket 🎟️',
           callback_data: JSON.stringify({
             command: '/createEvent',
             language: 'english',

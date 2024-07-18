@@ -796,7 +796,20 @@ export class BotService {
           }
           return await this.createEvent(query.message.chat.id);
 
-          return;
+        // close opened markup and delete result
+        case '/closedelete':
+          await this.eventBot.sendChatAction(query.message.chat.id, 'typing');
+          await this.databaseService.session.deleteMany({
+            where: { chat_id: chatId },
+          });
+          await this.databaseService.session.deleteMany({
+            where: { chat_id: chatId },
+          });
+          //Number(bookingDetailsDbId)
+          return await this.eventBot.deleteMessage(
+            query.message.chat.id,
+            query.message.message_id,
+          );
 
         case '/fileUploadUrl':
           await this.fileUploadByUrlPrompt(chatId);
