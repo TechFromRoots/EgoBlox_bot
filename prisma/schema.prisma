@@ -25,46 +25,57 @@ model User {
 
 model Session {
   id                      Int     @id @default(autoincrement())
-  departureCity           String?
-  destinationCity         String?
-  departureDate           String?
-  returnDate              String?
-  departureCityPromptId   String?
+  sessionOn               Boolean @default(false)
+  eventName               String?
+  description             String?
+  location                String?
+  startDate               String?
+  endDate                 String?
+  startTime               String?
+  endTime                 String?
+  contacts                String?
+  email                   String?
+  price                   String?
+  category                String?
+  numberOfTickets         String?
+  media                   String?
+  walletAddress           String?
+  eventNamePromptId       String?
   userAnswerId            String?
-  departureCityCode       String?
-  destinationCityCode     String?
-  destinationCityPromptId String?
-  departureDatePromptId   String?
-  returnDatePromptId      String?
-  multicitySearchData     String?
+  descriptionPromptId     String?
+  locationPromptId        String?
+  startDatePromptId       String?
+  startTimePromptId       String?
+  endDatePromptId         String?
+  endTimePromptId         String?
+  contactPromptId         String?
+  emailPromptId           String?
+  pricePromptId           String?
+  categoryPromptId        String?
+  numberOfTicketsPromptId String?
+  mediaPromptId           String?
+  walletAddressPromptId   String?
   bookingMarkdownId       BigInt?
-  language                String  @default("english")
-  one_way_search_state    Boolean @default(false)
-  return_search_state     Boolean @default(false)
-  multi_city_search_state Boolean @default(false)
   user                    User    @relation(fields: [chat_id], references: [chat_id], onDelete: Cascade)
   chat_id                 BigInt
 }
 
 model Event {
-  id                      Int     @id @default(autoincrement())
-  departureCity           String?
-  destinationCity         String?
-  departureDate           String?
-  returnDate              String?
-  departureCityPromptId   String?
-  userAnswerId            String?
-  departureCityCode       String?
-  destinationCityCode     String?
-  destinationCityPromptId String?
-  departureDatePromptId   String?
-  returnDatePromptId      String?
-  multicitySearchData     String?
-  bookingMarkdownId       BigInt?
-  language                String  @default("english")
-  one_way_search_state    Boolean @default(false)
-  return_search_state     Boolean @default(false)
-  multi_city_search_state Boolean @default(false)
-  user                    User    @relation(fields: [chat_id], references: [chat_id], onDelete: Cascade)
-  chat_id                 BigInt
+  id              Int     @id @default(autoincrement())
+  eventName       String?
+  description     String?
+  location        String?
+  startDate       String?
+  endDate         String?
+  startTime       String?
+  endTime         String?
+  contacts        String?
+  email           String?
+  price           String?
+  category        String?
+  numberOfTickets String?
+  media           String?
+  walletAddress   String?
+  user            User    @relation(fields: [chat_id], references: [chat_id], onDelete: Cascade)
+  chat_id         BigInt
 }

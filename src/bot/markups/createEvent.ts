@@ -11,6 +11,7 @@ export const eventDetails_en = (
   email?,
   price?,
   category?,
+  number_of_Tickets?,
   image?,
   walletAddress?,
 ) => {
@@ -25,6 +26,7 @@ export const eventDetails_en = (
   const organizerEmail = email || '';
   const ticketPrice = price || '';
   const ticketCategory = category || '';
+  const numberOfTickets = number_of_Tickets || '';
   const eventImage = image || '';
   const organizerWallet = walletAddress || '';
 
@@ -51,7 +53,7 @@ export const eventDetails_en = (
       ],
       [
         {
-          text: `Location? : ${eventLocaton}`,
+          text: `Location📍? : ${eventLocaton}`,
           callback_data: JSON.stringify({
             command: '/eventLocation',
             language: 'english',
@@ -60,14 +62,14 @@ export const eventDetails_en = (
       ],
       [
         {
-          text: `start date? : ${startDate}`,
+          text: `start date📅? : ${startDate}`,
           callback_data: JSON.stringify({
             command: '/eventStartDate',
             language: 'english',
           }),
         },
         {
-          text: `Time? : ${eventTime}`,
+          text: `Time🕛? : ${eventTime}`,
           callback_data: JSON.stringify({
             command: '/eventTime',
             language: 'english',
@@ -76,14 +78,14 @@ export const eventDetails_en = (
       ],
       [
         {
-          text: `End Date ? : ${endDate}`,
+          text: `End Date 📅? : ${endDate}`,
           callback_data: JSON.stringify({
             command: '/eventEndDate',
             language: 'english',
           }),
         },
         {
-          text: `Time? : ${eventEndTime}`,
+          text: `Time🕛? : ${eventEndTime}`,
           callback_data: JSON.stringify({
             command: '/eventEndTime',
             language: 'english',
@@ -108,14 +110,21 @@ export const eventDetails_en = (
       ],
       [
         {
-          text: `Ticket Price? : ${ticketPrice}`,
+          text: `Ticket Price? :\n${ticketPrice}`,
           callback_data: JSON.stringify({
             command: '/ticketPrice',
             language: 'english',
           }),
         },
         {
-          text: `Ticket Category? : ${ticketCategory}`,
+          text: `Category? :\n${ticketCategory}`,
+          callback_data: JSON.stringify({
+            command: '/ticketCategory',
+            language: 'english',
+          }),
+        },
+        {
+          text: `No of Tickets? :\n${numberOfTickets}`,
           callback_data: JSON.stringify({
             command: '/ticketCategory',
             language: 'english',

@@ -722,23 +722,9 @@ export class BotService {
       switch (command) {
         case '/menu':
           await this.eventBot.sendChatAction(chatId, 'typing');
-          const uniqueCode = await this.generateNkowaId();
-          let userNkowaId = 0;
-          //   if (uniqueCode) {
-          //     const user = await this.saveUserToDB({
-          //       chat_id: chatId,
-          //       nkowa_id: uniqueCode,
-          //     });
-          //     if (user) {
-          //       userNkowaId = user.nkowa_id;
-          //     }
-          //     await this.sendAllFeature(chatId, username, userNkowaId);
-          //     return;
-          //   }
           await this.sendAllFeature(chatId);
           return;
 
-        // proceed to buy ticket, this triggers the details markup
         case '/createEvent':
           await this.eventBot.sendChatAction(query.message.chat.id, 'typing');
           const sessionExist1 = await this.databaseService.session.findMany({
@@ -755,53 +741,134 @@ export class BotService {
             });
             // then create new one
             await this.createSession(query.message.chat.id, {
-              one_way_search_state: true,
-              return_search_state: false,
-              multi_city_search_state: false,
+              sessionOn: true,
               user: {
                 connect: { chat_id: query.message.chat.id },
               },
-              departureCityPromptId: JSON.stringify({
+              eventNamePromptId: JSON.stringify({
                 messageId: [],
               }),
-              destinationCityPromptId: JSON.stringify({
+              descriptionPromptId: JSON.stringify({
                 messageId: [],
               }),
               userAnswerId: JSON.stringify({ messageId: [] }),
-              departureDatePromptId: JSON.stringify({
+              locationPromptId: JSON.stringify({
                 messageId: [],
               }),
-              returnDatePromptId: JSON.stringify({
+              startDatePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              startTimePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              endDatePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              endTimePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              contactPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              emailPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              pricePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              categoryPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              numberOfTicketsPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              mediaPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              walletAddressPromptId: JSON.stringify({
                 messageId: [],
               }),
             });
           } else {
             await this.createSession(query.message.chat.id, {
-              one_way_search_state: true,
-              return_search_state: false,
-              multi_city_search_state: false,
-              user: { connect: { chat_id: query.message.chat.id } },
-              departureCityPromptId: JSON.stringify({
+              sessionOn: true,
+              user: {
+                connect: { chat_id: query.message.chat.id },
+              },
+              eventNamePromptId: JSON.stringify({
                 messageId: [],
               }),
-              destinationCityPromptId: JSON.stringify({
+              descriptionPromptId: JSON.stringify({
                 messageId: [],
               }),
               userAnswerId: JSON.stringify({ messageId: [] }),
-              departureDatePromptId: JSON.stringify({
+              locationPromptId: JSON.stringify({
                 messageId: [],
               }),
-              returnDatePromptId: JSON.stringify({ messageId: [] }),
+              startDatePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              startTimePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              endDatePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              endTimePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              contactPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              emailPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              pricePromptId: JSON.stringify({
+                messageId: [],
+              }),
+              categoryPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              numberOfTicketsPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              mediaPromptId: JSON.stringify({
+                messageId: [],
+              }),
+              walletAddressPromptId: JSON.stringify({
+                messageId: [],
+              }),
             });
           }
           return await this.createEvent(query.message.chat.id);
 
+        case '/eventName':
+          await this.eventBot.sendChatAction(chatId, 'typing');
+          return await this.eventNameSelection(query.message.chat.id);
+
+        case '/eventDescription':
+          await this.eventBot.sendChatAction(chatId, 'typing');
+          return await this.eventDescriptionSelection(query.message.chat.id);
+
+        case '/eventLocation':
+          await this.eventBot.sendChatAction(chatId, 'typing');
+          return await this.eventLocationSelection(query.message.chat.id);
+
+        case '/eventStartDate':
+          await this.eventBot.sendChatAction(chatId, 'typing');
+          return await this.eventStartDateSelection(query.message.chat.id);
+
+        case '/eventTime':
+          await this.eventBot.sendChatAction(chatId, 'typing');
+          return await this.eventStartTimeSelection(query.message.chat.id);
+
+        case '/eventEndDate':
+          await this.eventBot.sendChatAction(chatId, 'typing');
+          return await this.eventEndDateSelection(query.message.chat.id);
+
         // close opened markup and delete result
         case '/closedelete':
           await this.eventBot.sendChatAction(query.message.chat.id, 'typing');
-          await this.databaseService.session.deleteMany({
-            where: { chat_id: chatId },
-          });
           await this.databaseService.session.deleteMany({
             where: { chat_id: chatId },
           });
@@ -810,52 +877,6 @@ export class BotService {
             query.message.chat.id,
             query.message.message_id,
           );
-
-        case '/fileUploadUrl':
-          await this.fileUploadByUrlPrompt(chatId);
-          if (this.startedChatting[chatId].chat) {
-            delete this.startedChatting[chatId];
-            return;
-          }
-          return;
-
-        case '/fileUpload':
-          await this.fileUploadPrompt(chatId);
-          if (this.startedChatting[chatId].chat) {
-            delete this.startedChatting[chatId];
-            return;
-          }
-          return;
-
-        // case '/summary':
-        //   try {
-        //     await this.eventBot.sendMessage(chatId, '⏳ Request Processing .....');
-        //     const summary = await this.ragService.getSummary(sourceId);
-        //     if (summary) {
-        //       return this.eventBot.sendMessage(chatId, summary.summary);
-        //     } else {
-        //       return this.eventBot.sendMessage(chatId, 'Error processing summary');
-        //     }
-        //   } catch (error) {
-        //     console.log(error);
-        //   }
-
-        case '/chatPdf':
-          try {
-            const prompt = this.eventBot.sendMessage(
-              chatId,
-              'Start chatting 💬 ...',
-            );
-            if (prompt) {
-              // trigger start chat
-              return (this.startedChatting[chatId] = {
-                sourceId: sourceId,
-                chat: true,
-              });
-            }
-          } catch (error) {
-            console.log(error);
-          }
 
         // case '/viewFiles':
         //   try {
@@ -980,37 +1001,6 @@ export class BotService {
     }
   };
 
-  // Method to  save a new userdata to the database
-  //   async saveUserToDB(saveUserDto: Prisma.UserCreateInput) {
-  //     try {
-  //       const isSaved = await this.databaseService.user.findFirst({
-  //         where: { chat_id: saveUserDto.chat_id },
-  //       });
-  //       if (!isSaved) {
-  //         return this.databaseService.user.create({ data: saveUserDto });
-  //       }
-  //       return isSaved;
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-
-  generateNkowaId = async () => {
-    // Generate a random 4-digit number
-    let code = Math.floor(1000 + Math.random() * 9000);
-
-    // Check if the code is already in use
-    // If yes, generate a new one until it's unique
-    while (this.usedCodes.includes(code)) {
-      code = Math.floor(1000 + Math.random() * 9000);
-    }
-
-    // Add the code to the list of used codes
-    this.usedCodes.push(code);
-
-    return code;
-  };
-
   async createSession(
     chat_id: number,
     BookingSessionDto: Prisma.SessionCreateInput,
@@ -1058,4 +1048,202 @@ export class BotService {
       console.error(error);
     }
   }
+
+  eventNameSelection = async (chatId) => {
+    try {
+      const eventNamePrompt = await this.eventBot.sendMessage(
+        chatId,
+        '📝 Enter name of your event.',
+        {
+          reply_markup: {
+            force_reply: true,
+          },
+        },
+      );
+      const session = await this.databaseService.session.findFirst({
+        where: { chat_id: chatId },
+      });
+      if (session) {
+        const promptIds = JSON.parse(session.eventNamePromptId);
+        console.log('prompts :', promptIds['messageId']);
+        await this.updateUserSession(chatId, {
+          eventNamePromptId: JSON.stringify({
+            messageId: [
+              ...JSON.parse(session.eventNamePromptId)['messageId'],
+              eventNamePrompt.message_id,
+            ],
+          }),
+        });
+        return;
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  eventDescriptionSelection = async (chatId) => {
+    try {
+      const eventDescriptionPrompt = await this.eventBot.sendMessage(
+        chatId,
+        '📝 Enter event description.',
+        {
+          reply_markup: {
+            force_reply: true,
+          },
+        },
+      );
+      const session = await this.databaseService.session.findFirst({
+        where: { chat_id: chatId },
+      });
+      if (session) {
+        const promptIds = JSON.parse(session.descriptionPromptId);
+        console.log('prompts :', promptIds['messageId']);
+        await this.updateUserSession(chatId, {
+          description: JSON.stringify({
+            messageId: [
+              ...JSON.parse(session.descriptionPromptId)['messageId'],
+              eventDescriptionPrompt.message_id,
+            ],
+          }),
+        });
+        return;
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  eventLocationSelection = async (chatId) => {
+    try {
+      const eventLocationPrompt = await this.eventBot.sendMessage(
+        chatId,
+        '📍 Enter event location.',
+        {
+          reply_markup: {
+            force_reply: true,
+          },
+        },
+      );
+      const session = await this.databaseService.session.findFirst({
+        where: { chat_id: chatId },
+      });
+      if (session) {
+        const promptIds = JSON.parse(session.locationPromptId);
+        console.log('prompts :', promptIds['messageId']);
+        await this.updateUserSession(chatId, {
+          description: JSON.stringify({
+            messageId: [
+              ...JSON.parse(session.locationPromptId)['messageId'],
+              eventLocationPrompt.message_id,
+            ],
+          }),
+        });
+        return;
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  eventStartDateSelection = async (chatId) => {
+    try {
+      const eventStartDatePrompt = await this.eventBot.sendMessage(
+        chatId,
+        '📅 Enter event start date.',
+        {
+          reply_markup: {
+            force_reply: true,
+          },
+        },
+      );
+      const session = await this.databaseService.session.findFirst({
+        where: { chat_id: chatId },
+      });
+      if (session) {
+        const promptIds = JSON.parse(session.startDatePromptId);
+        console.log('prompts :', promptIds['messageId']);
+        await this.updateUserSession(chatId, {
+          description: JSON.stringify({
+            messageId: [
+              ...JSON.parse(session.startDatePromptId)['messageId'],
+              eventStartDatePrompt.message_id,
+            ],
+          }),
+        });
+        return;
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  eventStartTimeSelection = async (chatId) => {
+    try {
+      const eventStartTimePrompt = await this.eventBot.sendMessage(
+        chatId,
+        '📅 Enter event start date.',
+        {
+          reply_markup: {
+            force_reply: true,
+          },
+        },
+      );
+      const session = await this.databaseService.session.findFirst({
+        where: { chat_id: chatId },
+      });
+      if (session) {
+        const promptIds = JSON.parse(session.startDatePromptId);
+        console.log('prompts :', promptIds['messageId']);
+        await this.updateUserSession(chatId, {
+          description: JSON.stringify({
+            messageId: [
+              ...JSON.parse(session.startDatePromptId)['messageId'],
+              eventStartTimePrompt.message_id,
+            ],
+          }),
+        });
+        return;
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  eventEndDateSelection = async (chatId) => {
+    try {
+      const eventEndDatePrompt = await this.eventBot.sendMessage(
+        chatId,
+        '📅 Enter event end date.',
+        {
+          reply_markup: {
+            force_reply: true,
+          },
+        },
+      );
+      const session = await this.databaseService.session.findFirst({
+        where: { chat_id: chatId },
+      });
+      if (session) {
+        const promptIds = JSON.parse(session.startDatePromptId);
+        console.log('prompts :', promptIds['messageId']);
+        await this.updateUserSession(chatId, {
+          description: JSON.stringify({
+            messageId: [
+              ...JSON.parse(session.startDatePromptId)['messageId'],
+              eventEndDatePrompt.message_id,
+            ],
+          }),
+        });
+        return;
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 }
