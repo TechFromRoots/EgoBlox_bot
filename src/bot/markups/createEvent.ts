@@ -103,7 +103,7 @@ export const eventDetails_en = (
         {
           text: `Email? : ${organizerEmail}`,
           callback_data: JSON.stringify({
-            command: '/bookingEmail',
+            command: '/email',
             language: 'english',
           }),
         },
@@ -126,7 +126,7 @@ export const eventDetails_en = (
         {
           text: `No of Tickets? :\n${numberOfTickets}`,
           callback_data: JSON.stringify({
-            command: '/ticketCategory',
+            command: '/ticketNumber',
             language: 'english',
           }),
         },
