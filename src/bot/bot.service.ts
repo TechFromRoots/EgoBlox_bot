@@ -9,6 +9,8 @@ import {
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 
+const token = process.env.TELEGRAM_TOKEN;
+
 @Injectable()
 export class BotService {
   private readonly eventBot: TelegramBot;
@@ -19,10 +21,7 @@ export class BotService {
   private usedCodes = [];
 
   constructor(private readonly databaseService: DatabaseService) {
-    this.eventBot = new TelegramBot(
-      '7042026574:AAF415xg_dgxz6axoZXLHsbw87cB3CuhLic',
-      { polling: true },
-    );
+    this.eventBot = new TelegramBot(token, { polling: true });
     // event listerner for incomning messages
     this.eventBot.on('message', this.handleRecievedMessages);
 
@@ -107,108 +106,180 @@ export class BotService {
       // Regular expression pattern to match the format DD/MM/YYYY
       const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
       // Check if the date string matches the pattern
-      if (datePattern.test(msg.text.trim())) {
-        const latestSession = await this.databaseService.session.findFirst({
-          where: { chat_id: msg.chat.id },
-        });
-        if (
-          JSON.parse(latestSession.startDatePromptId)['messageId'].length !==
-            0 &&
-          !latestSession.startDate
-        ) {
-          const update = await this.updateUserSession(msg.chat.id, {
-            startDate: msg.text.trim(),
-            startDatePromptId: JSON.stringify({ messageId: [] }),
-            userAnswerId: JSON.stringify({ messageId: [] }),
+      if (!msg.photo) {
+        if (datePattern.test(msg.text.trim())) {
+          const latestSession = await this.databaseService.session.findFirst({
+            where: { chat_id: msg.chat.id },
           });
-          if (update) {
-            const markup = eventDetails_en(
-              latestSession.departureCity,
-              latestSession.destinationCity,
-              msg.text.trim(),
-            );
-            await this.eventBot.editMessageReplyMarkup(
-              { inline_keyboard: markup.oneWayMarkup },
-              {
-                chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
-              },
-            );
-          }
-          // loop through departuredate prompt to delete them
-          for (
-            let i = 0;
-            i <
-            JSON.parse(latestSession.departureDatePromptId)['messageId'].length;
-            i++
+          if (
+            JSON.parse(latestSession.startDatePromptId)['messageId'].length !==
+              0 &&
+            !latestSession.startDate
           ) {
-            await this.eventBot.deleteMessage(
-              msg.chat.id,
-              JSON.parse(latestSession.departureDatePromptId)['messageId'][i],
-            );
-          }
-          // loop through to delet all userReply
-          for (
-            let i = 0;
-            i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
-            i++
-          ) {
-            await this.eventBot.deleteMessage(
-              msg.chat.id,
-              JSON.parse(latestSession.userAnswerId)['messageId'][i],
-            );
-          }
-        } else if (
-          // this will handle return flight
-          JSON.parse(session.returnDatePromptId)['messageId'].length !== 0 &&
-          !session.returnDate
-        ) {
-          const update = await this.updateUserSession(msg.chat.id, {
-            returnDate: msg.text.trim(),
-            returnDatePromptId: JSON.stringify({ messageId: [] }),
-            userAnswerId: JSON.stringify({ messageId: [] }),
-          });
-
-          if (update) {
-            if (latestSession.one_way_search_state) {
-              const markup = booking_en(
-                latestSession.departureCity,
-                latestSession.destinationCity,
+            const update = await this.updateUserSession(msg.chat.id, {
+              startDate: msg.text.trim(),
+              startDatePromptId: JSON.stringify({ messageId: [] }),
+              userAnswerId: JSON.stringify({ messageId: [] }),
+            });
+            if (update) {
+              const markup = eventDetails_en(
+                latestSession.eventName,
+                latestSession.description,
+                latestSession.location,
                 msg.text.trim(),
+                latestSession.startTime,
+                latestSession.endDate,
+                latestSession.endTime,
+                latestSession.contacts,
+                latestSession.email,
+                latestSession.price,
+                latestSession.category,
+                latestSession.numberOfTickets,
+                latestSession.media,
+                latestSession.walletAddress,
               );
               await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.oneWayMarkup },
+                { inline_keyboard: markup.keyBoardMarkup },
                 {
                   chat_id: msg.chat.id,
                   message_id: Number(latestSession.bookingMarkdownId),
                 },
               );
-            } else if (latestSession.return_search_state) {
-              const markup = booking_en(
-                latestSession.departureCity,
-                latestSession.destinationCity,
-                latestSession.departureDate,
+            }
+            // loop through startDate prompt to delete them
+            for (
+              let i = 0;
+              i <
+              JSON.parse(latestSession.startDatePromptId)['messageId'].length;
+              i++
+            ) {
+              await this.eventBot.deleteMessage(
+                msg.chat.id,
+                JSON.parse(latestSession.startDatePromptId)['messageId'][i],
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              await this.eventBot.deleteMessage(
+                msg.chat.id,
+                JSON.parse(latestSession.userAnswerId)['messageId'][i],
+              );
+            }
+          } else if (
+            // this will handle event enddate
+            JSON.parse(session.endDatePromptId)['messageId'].length !== 0 &&
+            !session.returnDate
+          ) {
+            const update = await this.updateUserSession(msg.chat.id, {
+              endDate: msg.text.trim(),
+              endDatePromptId: JSON.stringify({ messageId: [] }),
+              userAnswerId: JSON.stringify({ messageId: [] }),
+            });
+
+            if (update) {
+              const markup = eventDetails_en(
+                latestSession.eventName,
+                latestSession.description,
+                latestSession.location,
+                latestSession.startDate,
+                latestSession.startTime,
                 msg.text.trim(),
+                latestSession.endTime,
+                latestSession.contacts,
+                latestSession.email,
+                latestSession.price,
+                latestSession.category,
+                latestSession.numberOfTickets,
+                latestSession.media,
+                latestSession.walletAddress,
               );
               await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.returnMarkup },
+                { inline_keyboard: markup.keyBoardMarkup },
                 {
                   chat_id: msg.chat.id,
                   message_id: Number(latestSession.bookingMarkdownId),
                 },
               );
+            }
 
-              // loop through departuredate prompt to delete them
+            // loop through startDate prompt to delete them
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.endDatePromptId)['messageId'].length;
+              i++
+            ) {
+              await this.eventBot.deleteMessage(
+                msg.chat.id,
+                JSON.parse(latestSession.endDatePromptId)['messageId'][i],
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              await this.eventBot.deleteMessage(
+                msg.chat.id,
+                JSON.parse(latestSession.userAnswerId)['messageId'][i],
+              );
+            }
+          }
+        } else {
+          console.log('Not a date');
+        }
+      }
+
+      // this detects the time format
+      function detectTimeFormat(str) {
+        const regex =
+          /\b(?:0?[1-9]|1[0-2]):[0-5][0-9]\s?[ap]m\s?[a-zA-Z]{3}\b/i;
+        const match = str.match(regex);
+        if (match) {
+          return {
+            time: match[0],
+            originalString: str,
+          };
+        }
+        return null;
+      }
+
+      if (!msg.photo) {
+        const time = detectTimeFormat(msg.text.trim());
+
+        if (time !== null && time.time !== '') {
+          const latestSession = await this.databaseService.session.findFirst({
+            where: { chat_id: msg.chat.id },
+          });
+          if (
+            !latestSession.startTime &&
+            JSON.parse(latestSession.startTimePromptId)['messageId'].length !==
+              0
+          ) {
+            console.log('time :', time.time);
+            const update = await this.updateUserSession(msg.chat.id, {
+              startTime: time.time,
+              startTimePromptId: JSON.stringify({ messageId: [] }),
+              userAnswerId: JSON.stringify({ messageId: [] }),
+            });
+            if (update) {
+              const promises = [];
+              // loop through departure prompt to delete them
               for (
                 let i = 0;
                 i <
-                JSON.parse(latestSession.returnDatePromptId)['messageId']
-                  .length;
+                JSON.parse(latestSession.startTimePromptId)['messageId'].length;
                 i++
               ) {
-                await this.eventBot.deleteMessage(
-                  msg.chat.id,
-                  JSON.parse(latestSession.returnDatePromptId)['messageId'][i],
+                promises.push(
+                  await this.eventBot.deleteMessage(
+                    msg.chat.id,
+                    JSON.parse(latestSession.startTimePromptId)['messageId'][i],
+                  ),
                 );
               }
               // loop through to delet all userReply
@@ -217,89 +288,746 @@ export class BotService {
                 i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
                 i++
               ) {
-                await this.eventBot.deleteMessage(
-                  msg.chat.id,
-                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                promises.push(
+                  await this.eventBot.deleteMessage(
+                    msg.chat.id,
+                    JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                  ),
                 );
               }
-            } else if (latestSession.multi_city_search_state) {
-              const markup = booking_en(
+
+              const markup = eventDetails_en(
+                latestSession.eventName,
+                latestSession.description,
+                latestSession.location,
+                latestSession.startDate,
                 msg.text.trim(),
-                latestSession.destinationCity,
-                latestSession.departureDate,
+                latestSession.endDate,
+                latestSession.endTime,
+                latestSession.contacts,
+                latestSession.email,
+                latestSession.price,
+                latestSession.category,
+                latestSession.numberOfTickets,
+                latestSession.media,
+                latestSession.walletAddress,
               );
-              //TODO: change markup to multicity
               await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.returnMarkup },
+                { inline_keyboard: markup.keyBoardMarkup },
                 {
                   chat_id: msg.chat.id,
                   message_id: Number(latestSession.bookingMarkdownId),
                 },
               );
             }
+          } else if (
+            !latestSession.endTime &&
+            JSON.parse(latestSession.endTimePromptId)['messageId'].length !== 0
+          ) {
+            const update = await this.updateUserSession(msg.chat.id, {
+              endTime: time.time,
+              endTimePromptId: JSON.stringify({ messageId: [] }),
+              userAnswerId: JSON.stringify({ messageId: [] }),
+            });
+            if (update) {
+              const markup = eventDetails_en(
+                latestSession.eventName,
+                latestSession.description,
+                latestSession.location,
+                latestSession.startDate,
+                latestSession.startTime,
+                latestSession.endDate,
+                msg.text.trim(),
+                latestSession.contacts,
+                latestSession.email,
+                latestSession.price,
+                latestSession.category,
+                latestSession.numberOfTickets,
+                latestSession.media,
+                latestSession.walletAddress,
+              );
+              await this.eventBot.editMessageReplyMarkup(
+                { inline_keyboard: markup.keyBoardMarkup },
+                {
+                  chat_id: msg.chat.id,
+                  message_id: Number(latestSession.bookingMarkdownId),
+                },
+              );
+            }
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.endTimePromptId)['messageId'].length;
+              i++
+            ) {
+              await this.eventBot.deleteMessage(
+                msg.chat.id,
+                JSON.parse(latestSession.endTimePromptId)['messageId'][i],
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              await this.eventBot.deleteMessage(
+                msg.chat.id,
+                JSON.parse(latestSession.userAnswerId)['messageId'][i],
+              );
+            }
+          } else {
+            console.log('nothing');
           }
+        } else {
+          console.log('not time');
         }
-      } else {
-        console.log('Not a date');
       }
 
-      // this extracts the airport code, when a user presses the inline button
-      function extractStringInBracket(sentence) {
-        const start = sentence.indexOf('(') + 1;
-        const end = sentence.indexOf(')', start);
-        return sentence.substring(start, end);
-      }
-
-      // if (JSON.parse(session.userAnswerId)['messageId'].length !== 0) {
-      //   const answerIds = JSON.parse(session.userAnswerId)['messageId'];
-      //   console.log('answerIds ', answerIds);
-      //   console.log('IDS  ', session);
-      //   await this.updateUserSession(msg.chat.id, {
-      //     userAnswerId: JSON.stringify({
-      //       messageId: [...answerIds, msg.message_id],
-      //     }),
-      //   });
-      // } else {
-      //   await this.updateUserSession(msg.chat.id, {
-      //     userAnswerId: JSON.stringify({
-      //       messageId: [
-      //         ...JSON.parse(session.userAnswerId)['messageId'],
-      //         msg.message_id,
-      //       ],
-      //     }),
-      //   });
-      // }
-
-      // handle airport selected by a user
-      const airportCode = extractStringInBracket(msg.text.trim());
-
-      // save this to a db
-      if (airportCode !== undefined && airportCode !== '') {
+      // parse incoming message and handle commands
+      try {
         const latestSession = await this.databaseService.session.findFirst({
           where: { chat_id: msg.chat.id },
         });
-        if (!latestSession.departureCityCode) {
-          console.log('code ', airportCode);
+        if (
+          !latestSession.eventName &&
+          JSON.parse(latestSession.eventNamePromptId)['messageId'].length !== 0
+        ) {
           const update = await this.updateUserSession(msg.chat.id, {
-            departureCityCode: airportCode,
-            departureCity: msg.text.trim(),
-            departureCityPromptId: JSON.stringify({ messageId: [] }),
+            eventName: msg.text.trim(),
+            eventNamePromptId: JSON.stringify({ messageId: [] }),
             userAnswerId: JSON.stringify({ messageId: [] }),
           });
           if (update) {
+            const markup = eventDetails_en(
+              msg.text.trim(),
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
             const promises = [];
             // loop through departure prompt to delete them
             for (
               let i = 0;
               i <
-              JSON.parse(latestSession.departureCityPromptId)['messageId']
+              JSON.parse(latestSession.eventNamePromptId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.eventNamePromptId)['messageId'][i],
+                ),
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
+              );
+            }
+          }
+        } else if (
+          !latestSession.description &&
+          JSON.parse(latestSession.descriptionPromptId)['messageId'].length !==
+            0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            description: msg.text.trim(),
+            descriptionPromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              msg.text.trim(),
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
+            const promises = [];
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i <
+              JSON.parse(latestSession.descriptionPromptId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.descriptionPromptId)['messageId'][i],
+                ),
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
+              );
+            }
+          }
+        } else if (
+          !latestSession.location &&
+          JSON.parse(latestSession.locationPromptId)['messageId'].length !== 0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            location: msg.text.trim(),
+            locationPromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              msg.text.trim(),
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
+            const promises = [];
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i <
+              JSON.parse(latestSession.locationPromptId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.locationPromptId)['messageId'][i],
+                ),
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
+              );
+            }
+          }
+        } else if (
+          !latestSession.contacts &&
+          JSON.parse(latestSession.contactPromptId)['messageId'].length !== 0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            contacts: msg.text.trim(),
+            contactPromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              msg.text.trim(),
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
+            const promises = [];
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.contactPromptId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.contactPromptId)['messageId'][i],
+                ),
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
+              );
+            }
+          }
+        } else if (
+          !latestSession.email &&
+          JSON.parse(latestSession.emailPromptId)['messageId'].length !== 0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            email: msg.text.trim(),
+            emailPromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              msg.text.trim(),
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
+            const promises = [];
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.emailPromptId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.emailPromptId)['messageId'][i],
+                ),
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
+              );
+            }
+          }
+        } else if (
+          !latestSession.price &&
+          JSON.parse(latestSession.pricePromptId)['messageId'].length !== 0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            price: msg.text.trim(),
+            pricePromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              msg.text.trim(),
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
+            const promises = [];
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.pricePromptId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.pricePromptId)['messageId'][i],
+                ),
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
+              );
+            }
+          }
+        } else if (
+          !latestSession.category &&
+          JSON.parse(latestSession.categoryPromptId)['messageId'].length !== 0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            category: msg.text.trim(),
+            categoryPromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              msg.text.trim(),
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
+            const promises = [];
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i <
+              JSON.parse(latestSession.categoryPromptId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.categoryPromptId)['messageId'][i],
+                ),
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
+              );
+            }
+          }
+        } else if (
+          !latestSession.numberOfTickets &&
+          JSON.parse(latestSession.numberOfTicketsPromptId)['messageId']
+            .length !== 0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            numberOfTickets: msg.text.trim(),
+            numberOfTicketsPromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              msg.text.trim(),
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
+            const promises = [];
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i <
+              JSON.parse(latestSession.numberOfTicketsPromptId)['messageId']
                 .length;
               i++
             ) {
               promises.push(
                 await this.eventBot.deleteMessage(
                   msg.chat.id,
-                  JSON.parse(latestSession.departureCityPromptId)['messageId'][
+                  JSON.parse(latestSession.numberOfTicketsPromptId)[
+                    'messageId'
+                  ][i],
+                ),
+              );
+            }
+            // loop through to delet all userReply
+            for (
+              let i = 0;
+              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
+              );
+            }
+          }
+        } else if (
+          msg.photo &&
+          !latestSession.media &&
+          JSON.parse(latestSession.mediaPromptId)['messageId'].length !== 0
+        ) {
+          const fileId = msg.photo[msg.photo.length - 1].file_id;
+          const file = await this.eventBot.getFile(fileId);
+          if (file) {
+            const filePath = file.file_path;
+            const fileUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
+            console.log(fileUrl);
+            const response = await fetch(
+              `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`,
+            );
+            console.log(response.url);
+            // Fetch the image from Telegram
+            const imageResponse = await fetch(fileUrl);
+            const arrayBuffer = await imageResponse.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            console.log('image response :', buffer);
+
+            this.eventBot.sendMessage(
+              msg.chat.id,
+              `Image received! You can download it from: ${fileId}`,
+            );
+            const update = await this.updateUserSession(msg.chat.id, {
+              media: fileUrl,
+              mediaPromptId: JSON.stringify({ messageId: [] }),
+              userAnswerId: JSON.stringify({ messageId: [] }),
+            });
+            if (update) {
+              const markup = eventDetails_en(
+                latestSession.eventName,
+                latestSession.description,
+                latestSession.location,
+                latestSession.startDate,
+                latestSession.startTime,
+                latestSession.endDate,
+                latestSession.endTime,
+                latestSession.contacts,
+                latestSession.email,
+                latestSession.price,
+                latestSession.category,
+                latestSession.numberOfTickets,
+                fileUrl,
+                latestSession.walletAddress,
+              );
+              await this.eventBot.sendPhoto(msg.chat.id, fileId);
+              await this.eventBot.editMessageReplyMarkup(
+                { inline_keyboard: markup.keyBoardMarkup },
+                {
+                  chat_id: msg.chat.id,
+                  message_id: Number(latestSession.bookingMarkdownId),
+                },
+              );
+
+              const promises = [];
+              // loop through departure prompt to delete them
+              for (
+                let i = 0;
+                i < JSON.parse(latestSession.mediaPromptId)['messageId'].length;
+                i++
+              ) {
+                promises.push(
+                  await this.eventBot.deleteMessage(
+                    msg.chat.id,
+                    JSON.parse(latestSession.mediaPromptId)['messageId'][i],
+                  ),
+                );
+              }
+              // loop through to delet all userReply
+              for (
+                let i = 0;
+                i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+                i++
+              ) {
+                promises.push(
+                  await this.eventBot.deleteMessage(
+                    msg.chat.id,
+                    JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                  ),
+                );
+              }
+            }
+          }
+        } else if (
+          !latestSession.walletAddress &&
+          JSON.parse(latestSession.walletAddressPromptId)['messageId']
+            .length !== 0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            walletAddress: msg.text.trim(),
+            walletAddressPromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              msg.text.trim(),
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+
+            const promises = [];
+            // loop through departure prompt to delete them
+            for (
+              let i = 0;
+              i <
+              JSON.parse(latestSession.walletAddressPromptId)['messageId']
+                .length;
+              i++
+            ) {
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.walletAddressPromptId)['messageId'][
                     i
                   ],
                 ),
@@ -318,310 +1046,14 @@ export class BotService {
                 ),
               );
             }
-
-            if (latestSession.one_way_search_state) {
-              const markup = booking_en(
-                msg.text.trim(),
-                latestSession.destinationCity,
-                latestSession.departureDate,
-              );
-              await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.oneWayMarkup },
-                {
-                  chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
-                },
-              );
-            } else if (latestSession.return_search_state) {
-              const markup = booking_en(
-                msg.text.trim(),
-                latestSession.destinationCity,
-                latestSession.departureDate,
-                latestSession.returnDate,
-              );
-              await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.returnMarkup },
-                {
-                  chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
-                },
-              );
-            } else if (latestSession.multi_city_search_state) {
-              const deletedAllResponse = await Promise.all(promises);
-              if (deletedAllResponse) {
-                await this.destinationCitySelection(latestSession.chat_id);
-              }
-            }
-          }
-        } else if (!latestSession.destinationCityCode) {
-          const update = await this.updateUserSession(msg.chat.id, {
-            destinationCityCode: airportCode,
-            destinationCity: msg.text.trim(),
-            destinationCityPromptId: JSON.stringify({ messageId: [] }),
-            userAnswerId: JSON.stringify({ messageId: [] }),
-          });
-          if (update) {
-            if (latestSession.one_way_search_state) {
-              const markup = booking_en(
-                latestSession.departureCity,
-                msg.text.trim(),
-                latestSession.departureDate,
-              );
-              await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.oneWayMarkup },
-                {
-                  chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
-                },
-              );
-            } else if (latestSession.return_search_state) {
-              const markup = booking_en(
-                latestSession.departureCity,
-                msg.text.trim(),
-                latestSession.departureDate,
-                latestSession.returnDate,
-              );
-              await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.returnMarkup },
-                {
-                  chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
-                },
-              );
-            } else if (latestSession.multi_city_search_state) {
-              await this.departureDateSelection(latestSession.chat_id);
-            }
-          }
-          // loop through departure prompt to delete them
-          for (
-            let i = 0;
-            i <
-            JSON.parse(latestSession.destinationCityPromptId)['messageId']
-              .length;
-            i++
-          ) {
-            await this.eventBot.deleteMessage(
-              msg.chat.id,
-              JSON.parse(latestSession.destinationCityPromptId)['messageId'][i],
-            );
-          }
-          // loop through to delet all userReply
-          for (
-            let i = 0;
-            i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
-            i++
-          ) {
-            await this.eventBot.deleteMessage(
-              msg.chat.id,
-              JSON.parse(latestSession.userAnswerId)['messageId'][i],
-            );
           }
         } else {
-          //TODO: handle multicity
-          // this.multicityCode[msg.chat.id] = airportCode;
-          // this.thirdCity[msg.chat.id] = (msg.text).trim();
-        }
-      } else {
-        console.log('code is empty');
-      }
-      // parse incoming message and handle commands
-      try {
-        const latestSession = await this.databaseService.session.findFirst({
-          where: { chat_id: msg.chat.id },
-        });
-        if (
-          !latestSession.departureCityCode ||
-          !latestSession.destinationCityCode ||
-          latestSession.multi_city_search_state
-        ) {
-          const matchedCity = await this.flightSearchService.searchAirport(
-            msg.text.trim(),
+          return await this.eventBot.sendMessage(
+            msg.chat.id,
+            `Processing command failed, please try again`,
           );
-          if (matchedCity) {
-            // Define your keyboard layout
-            const cities = matchedCity.map((city) => {
-              return [`${city['name']}, ${city['location']} (${city.iata})`];
-            });
-            //the markup from yhr returned cities
-            const keyboard = cities;
-
-            // Create a reply keyboard markup
-            const SelectCityMarkup = {
-              keyboard: keyboard,
-              one_time_keyboard: true,
-              remove_keyboard: true,
-            };
-            switch (latestSession.language) {
-              case 'english':
-                //TODO: SEND reply button along
-                if (!latestSession.departureCityCode) {
-                  const selectCityPrompt = await this.eventBot.sendMessage(
-                    msg.chat.id,
-                    `Please choose the city from the list 👇`,
-                    { reply_markup: SelectCityMarkup },
-                  );
-                  if (selectCityPrompt) {
-                    await this.updateUserSession(msg.chat.id, {
-                      departureCityPromptId: JSON.stringify({
-                        messageId: [
-                          ...JSON.parse(session.departureCityPromptId)[
-                            'messageId'
-                          ],
-                          selectCityPrompt.message_id,
-                        ],
-                      }),
-                    });
-                    return;
-                  }
-                } else if (
-                  JSON.parse(latestSession.destinationCityPromptId)['messageId']
-                    .length !== 0 &&
-                  !latestSession.destinationCityCode
-                ) {
-                  const selectCityPrompt = await this.eventBot.sendMessage(
-                    msg.chat.id,
-                    `Please choose the city from the list 👇`,
-                    { reply_markup: SelectCityMarkup },
-                  );
-                  if (selectCityPrompt) {
-                    await this.updateUserSession(msg.chat.id, {
-                      destinationCityPromptId: JSON.stringify({
-                        messageId: [
-                          ...JSON.parse(latestSession.destinationCityPromptId)[
-                            'messageId'
-                          ],
-                          selectCityPrompt.message_id,
-                        ],
-                      }),
-                    });
-                    return;
-                  }
-                } else if (
-                  JSON.parse(latestSession.destinationCityPromptId)['messageId']
-                    .length !== 0 &&
-                  latestSession.destinationCityCode &&
-                  !latestSession.departureDatePromptId
-                ) {
-                  // loop through destination prompt to delete them
-                  for (
-                    let i = 0;
-                    i <
-                    JSON.parse(latestSession.destinationCityPromptId)[
-                      'messageId'
-                    ].length;
-                    i++
-                  ) {
-                    await this.eventBot.deleteMessage(
-                      msg.chat.id,
-                      JSON.parse(latestSession.destinationCityPromptId)[
-                        'messageId'
-                      ][i],
-                    );
-                  }
-                  // loop through to delete all userReply
-                  for (
-                    let i = 0;
-                    i <
-                    JSON.parse(latestSession.userAnswerId)['messageId'].length;
-                    i++
-                  ) {
-                    await this.eventBot.deleteMessage(
-                      msg.chat.id,
-                      JSON.parse(latestSession.userAnswerId)['messageId'][i],
-                    );
-                  }
-                  //TODO:delete userAnswerId
-                  // delete this.userAnswerId[msg.chat.id];
-
-                  const markup = booking_en(
-                    latestSession.departureCity[msg.chat.id],
-                    latestSession.destinationCity[msg.chat.id],
-                    latestSession.departureDate[msg.chat.id],
-                  );
-                  const setDestinationCity =
-                    await this.eventBot.editMessageReplyMarkup(
-                      { inline_keyboard: markup.oneWayMarkup },
-                      {
-                        chat_id: msg.chat.id,
-                        message_id: session.bookingMarkdownId,
-                      },
-                    );
-                  if (setDestinationCity) {
-                    return;
-                  }
-                  return;
-                } else if (
-                  JSON.parse(latestSession.departureDatePromptId)['messageId']
-                    .length !== 0 &&
-                  latestSession.departureDate
-                ) {
-                  const markup = booking_en(
-                    latestSession.departureCity,
-                    latestSession.destinationCity,
-                    latestSession.departureDate,
-                  );
-                  const setDepartureDate =
-                    await this.eventBot.editMessageReplyMarkup(
-                      {
-                        inline_keyboard: markup.oneWayMarkup,
-                      },
-                      {
-                        chat_id: msg.chat.id,
-                        message_id: Number(latestSession.bookingMarkdownId),
-                      },
-                    );
-                  if (setDepartureDate) {
-                    // loop through destination prompt to delete them
-
-                    for (
-                      let i = 0;
-                      JSON.parse(latestSession.departureDatePromptId)[
-                        'messageId'
-                      ].length;
-                      i++
-                    ) {
-                      await this.eventBot.deleteMessage(
-                        msg.chat.id,
-                        JSON.parse(latestSession.departureDatePromptId)[
-                          'messageId'
-                        ][i],
-                      );
-                    }
-                    // loop through to delete all userReply
-                    for (
-                      let i = 0;
-                      i <
-                      JSON.parse(latestSession.userAnswerId)['messageId']
-                        .length;
-                      i++
-                    ) {
-                      await this.eventBot.deleteMessage(
-                        msg.chat.id,
-                        JSON.parse(latestSession.userAnswerId)['messageId'][i],
-                      );
-                    }
-                    // delete this.userAnswerId[msg.chat.id];
-                    return;
-                  }
-                }
-                return;
-
-              default:
-                const searchReplyMarkup = {
-                  inline_keyboard: searchType_en.searchTypeMarkup,
-                };
-                this.eventBot.sendMessage(
-                  msg.chat.id,
-                  'Please select the type of search 👇',
-                  {
-                    reply_markup: searchReplyMarkup,
-                  },
-                );
-            }
-          }
         }
       } catch (error) {
-        console.log('second');
         console.error(error);
 
         return await this.eventBot.sendMessage(
@@ -1044,6 +1476,7 @@ export class BotService {
         const promptIds = JSON.parse(session.eventNamePromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
+          eventName: null,
           eventNamePromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.eventNamePromptId)['messageId'],
@@ -1077,7 +1510,8 @@ export class BotService {
         const promptIds = JSON.parse(session.descriptionPromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          description: null,
+          descriptionPromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.descriptionPromptId)['messageId'],
               eventDescriptionPrompt.message_id,
@@ -1110,7 +1544,8 @@ export class BotService {
         const promptIds = JSON.parse(session.locationPromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          location: null,
+          locationPromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.locationPromptId)['messageId'],
               eventLocationPrompt.message_id,
@@ -1129,7 +1564,7 @@ export class BotService {
     try {
       const eventStartDatePrompt = await this.eventBot.sendMessage(
         chatId,
-        '📅 Enter event start date.',
+        '📅 Enter event start date(dd/mm/yyyy). e.g 20/04/2024',
         {
           reply_markup: {
             force_reply: true,
@@ -1143,7 +1578,8 @@ export class BotService {
         const promptIds = JSON.parse(session.startDatePromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          startDate: null,
+          startDatePromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.startDatePromptId)['messageId'],
               eventStartDatePrompt.message_id,
@@ -1162,7 +1598,7 @@ export class BotService {
     try {
       const eventStartTimePrompt = await this.eventBot.sendMessage(
         chatId,
-        '🕛 Enter event start time.',
+        '🕛 Enter event start time. e.g: 12:00pm UTC',
         {
           reply_markup: {
             force_reply: true,
@@ -1176,7 +1612,8 @@ export class BotService {
         const promptIds = JSON.parse(session.startTimePromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          startTime: null,
+          startTimePromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.startTimePromptId)['messageId'],
               eventStartTimePrompt.message_id,
@@ -1195,7 +1632,7 @@ export class BotService {
     try {
       const eventEndDatePrompt = await this.eventBot.sendMessage(
         chatId,
-        '📅 Enter event end date.',
+        '📅 Enter event end date(dd/mm/yyyy). e.g 20/04/2024',
         {
           reply_markup: {
             force_reply: true,
@@ -1209,7 +1646,8 @@ export class BotService {
         const promptIds = JSON.parse(session.endDatePromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          endDate: null,
+          endDatePromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.endDatePromptId)['messageId'],
               eventEndDatePrompt.message_id,
@@ -1228,7 +1666,7 @@ export class BotService {
     try {
       const eventEndTimePrompt = await this.eventBot.sendMessage(
         chatId,
-        '🕛 Enter event end time.',
+        '🕛 Enter event end time. e.g: 01:00pm UTC',
         {
           reply_markup: {
             force_reply: true,
@@ -1242,7 +1680,8 @@ export class BotService {
         const promptIds = JSON.parse(session.endTimePromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          endTime: null,
+          endTimePromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.endTimePromptId)['messageId'],
               eventEndTimePrompt.message_id,
@@ -1275,7 +1714,8 @@ export class BotService {
         const promptIds = JSON.parse(session.contactPromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          contacts: null,
+          contactPromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.contactPromptId)['messageId'],
               contactPrompt.message_id,
@@ -1308,7 +1748,8 @@ export class BotService {
         const promptIds = JSON.parse(session.emailPromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          email: null,
+          emailPromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.emailPromptId)['messageId'],
               emailPrompt.message_id,
@@ -1341,7 +1782,8 @@ export class BotService {
         const promptIds = JSON.parse(session.pricePromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          price: null,
+          pricePromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.pricePromptId)['messageId'],
               pricePrompt.message_id,
@@ -1360,7 +1802,7 @@ export class BotService {
     try {
       const categoryPrompt = await this.eventBot.sendMessage(
         chatId,
-        'Enter Ticket category',
+        'Enter Ticket category. e.g (VIP, EarlyBirds etc)',
         {
           reply_markup: {
             force_reply: true,
@@ -1374,7 +1816,8 @@ export class BotService {
         const promptIds = JSON.parse(session.categoryPromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          category: null,
+          categoryPromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.categoryPromptId)['messageId'],
               categoryPrompt.message_id,
@@ -1407,7 +1850,8 @@ export class BotService {
         const promptIds = JSON.parse(session.numberOfTicketsPromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          numberOfTickets: null,
+          numberOfTicketsPromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.numberOfTicketsPromptId)['messageId'],
               numberOfTicketsPrompt.message_id,
@@ -1440,7 +1884,8 @@ export class BotService {
         const promptIds = JSON.parse(session.mediaPromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          media: null,
+          mediaPromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.mediaPromptId)['messageId'],
               mediaPrompt.message_id,
@@ -1473,7 +1918,8 @@ export class BotService {
         const promptIds = JSON.parse(session.walletAddressPromptId);
         console.log('prompts :', promptIds['messageId']);
         await this.updateUserSession(chatId, {
-          description: JSON.stringify({
+          walletAddress: null,
+          walletAddressPromptId: JSON.stringify({
             messageId: [
               ...JSON.parse(session.walletAddressPromptId)['messageId'],
               walletPrompt.message_id,
@@ -1481,6 +1927,31 @@ export class BotService {
           }),
         });
         return;
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  getMedia = async (fileId) => {
+    try {
+      // Get the file path from Telegram
+      const response = await fetch(
+        `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`,
+      );
+      const data = await response.json();
+
+      if (data.ok) {
+        const filePath = data.result.file_path;
+        const fileUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
+
+        // Fetch the image from Telegram
+        const imageResponse = await fetch(fileUrl);
+        const arrayBuffer = await imageResponse.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        return { imageResponse, buffer };
       }
       return;
     } catch (error) {

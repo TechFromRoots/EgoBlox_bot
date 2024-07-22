@@ -1,5 +1,4 @@
 export const eventDetails_en = (
-  dbId?,
   event_Name?,
   event_Description?,
   location?,
@@ -35,7 +34,7 @@ export const eventDetails_en = (
     keyBoardMarkup: [
       [
         {
-          text: `Event Name? : ${eventName}`,
+          text: `Event Name? :\n ${eventName}`,
           callback_data: JSON.stringify({
             command: '/eventName',
             language: 'english',
@@ -124,7 +123,7 @@ export const eventDetails_en = (
           }),
         },
         {
-          text: `No of Tickets? :\n${numberOfTickets}`,
+          text: `No of \nTickets? :${numberOfTickets}`,
           callback_data: JSON.stringify({
             command: '/ticketNumber',
             language: 'english',
@@ -154,14 +153,14 @@ export const eventDetails_en = (
           text: `Generate Ticket 🎟️\nBLInk`,
           callback_data: JSON.stringify({
             command: '/GenerateBlinkLink',
-            bookingDetailsDbId: Number(dbId),
+            // bookingDetailsDbId: Number(dbId),
           }),
         },
         {
           text: '❌ Close',
           callback_data: JSON.stringify({
             command: '/closedelete',
-            bookingDetailsDbId: Number(dbId),
+            // bookingDetailsDbId: Number(dbId),
           }),
         },
       ],
