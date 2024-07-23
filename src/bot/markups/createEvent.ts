@@ -16,7 +16,7 @@ export const eventDetails_en = (
 ) => {
   const eventName = event_Name || '';
   const eventDescription = event_Description || '';
-  const eventLocaton = location || '';
+  const eventLocation = location || '';
   const startDate = start_date || '';
   const eventTime = time || '';
   const endDate = end_date || '';
@@ -52,7 +52,7 @@ export const eventDetails_en = (
       ],
       [
         {
-          text: `Location📍? : ${eventLocaton}`,
+          text: `Location📍? : ${eventLocation}`,
           callback_data: JSON.stringify({
             command: '/eventLocation',
             language: 'english',
@@ -150,9 +150,9 @@ export const eventDetails_en = (
       ],
       [
         {
-          text: `Generate Ticket 🎟️\nBLInk`,
+          text: 'Preview 👀',
           callback_data: JSON.stringify({
-            command: '/GenerateBlinkLink',
+            command: '/preview',
             // bookingDetailsDbId: Number(dbId),
           }),
         },
@@ -160,6 +160,15 @@ export const eventDetails_en = (
           text: '❌ Close',
           callback_data: JSON.stringify({
             command: '/closedelete',
+            // bookingDetailsDbId: Number(dbId),
+          }),
+        },
+      ],
+      [
+        {
+          text: `Generate Ticket 🎟️\nBLInk`,
+          callback_data: JSON.stringify({
+            command: '/GenerateBlinkLink',
             // bookingDetailsDbId: Number(dbId),
           }),
         },

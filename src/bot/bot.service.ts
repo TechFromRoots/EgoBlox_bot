@@ -415,6 +415,7 @@ export class BotService {
               latestSession.media,
               latestSession.walletAddress,
             );
+
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
@@ -1275,6 +1276,10 @@ export class BotService {
           await this.eventBot.sendChatAction(chatId, 'typing');
           return await this.walletSelection(query.message.chat.id);
 
+        case '/preview':
+          await this.eventBot.sendChatAction(chatId, 'typing');
+          return await this.previewEventDetails(query.message.chat.id);
+
         // close opened markup and delete result
         case '/closedelete':
           await this.eventBot.sendChatAction(query.message.chat.id, 'typing');
@@ -1901,6 +1906,40 @@ export class BotService {
   };
 
   walletSelection = async (chatId) => {
+    try {
+      const walletPrompt = await this.eventBot.sendMessage(
+        chatId,
+        'Enter your wallet Address',
+        {
+          reply_markup: {
+            force_reply: true,
+          },
+        },
+      );
+      const session = await this.databaseService.session.findFirst({
+        where: { chat_id: chatId },
+      });
+      if (session) {
+        const promptIds = JSON.parse(session.walletAddressPromptId);
+        console.log('prompts :', promptIds['messageId']);
+        await this.updateUserSession(chatId, {
+          walletAddress: null,
+          walletAddressPromptId: JSON.stringify({
+            messageId: [
+              ...JSON.parse(session.walletAddressPromptId)['messageId'],
+              walletPrompt.message_id,
+            ],
+          }),
+        });
+        return;
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  previewEventDetails = async (chatId) => {
     try {
       const walletPrompt = await this.eventBot.sendMessage(
         chatId,
