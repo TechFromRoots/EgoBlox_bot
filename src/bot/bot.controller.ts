@@ -7,15 +7,16 @@ export class BotController {
   constructor(private readonly botService: BotService) {}
 
   @Get(':fileId')
-  @Header('content-type', 'image/jpeg')
+  // @Header('content-type', 'image/jpeg')
   async getMedia(
     @Param('fileId') fileId: any,
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
-      console.log('query  : ', fileId);
+      console.log('query  :', fileId);
       const response = await this.botService.getMedia(fileId);
       if (response.buffer) {
+        res.setHeader('content-type', 'image/jpeg');
         res.send(response.buffer);
       }
     } catch (error) {

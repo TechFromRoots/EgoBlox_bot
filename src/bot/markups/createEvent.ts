@@ -26,7 +26,7 @@ export const eventDetails_en = (
   const ticketPrice = price || '';
   const ticketCategory = category || '';
   const numberOfTickets = number_of_Tickets || '';
-  const eventImage = image || '';
+  const eventImage = image ? '✅' : '';
   const organizerWallet = walletAddress || '';
 
   return {

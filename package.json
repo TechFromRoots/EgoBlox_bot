@@ -24,6 +24,8 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^5.17.0",
+    "@solana/actions": "^1.2.0",
+    "@solana/web3.js": "^1.95.1",
     "node-telegram-bot-api": "^0.66.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"

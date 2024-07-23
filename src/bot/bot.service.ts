@@ -904,25 +904,25 @@ export class BotService {
           const fileId = msg.photo[msg.photo.length - 1].file_id;
           const file = await this.eventBot.getFile(fileId);
           if (file) {
-            const filePath = file.file_path;
-            const fileUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
-            console.log(fileUrl);
-            const response = await fetch(
-              `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`,
-            );
-            console.log(response.url);
+            // const filePath = file.file_path;
+            // const fileUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
+            // console.log(fileUrl);
+            // const response = await fetch(
+            //   `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`,
+            // );
+            // console.log(response.url);
             // Fetch the image from Telegram
-            const imageResponse = await fetch(fileUrl);
-            const arrayBuffer = await imageResponse.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            console.log('image response :', buffer);
+            // const imageResponse = await fetch(fileUrl);
+            // const arrayBuffer = await imageResponse.arrayBuffer();
+            // const buffer = Buffer.from(arrayBuffer);
+            // console.log('image response :', buffer);
 
-            this.eventBot.sendMessage(
+            await this.eventBot.sendMessage(
               msg.chat.id,
               `Image received! You can download it from: ${fileId}`,
             );
             const update = await this.updateUserSession(msg.chat.id, {
-              media: fileUrl,
+              media: fileId,
               mediaPromptId: JSON.stringify({ messageId: [] }),
               userAnswerId: JSON.stringify({ messageId: [] }),
             });
@@ -1987,10 +1987,15 @@ export class BotService {
 
         // Fetch the image from Telegram
         const imageResponse = await fetch(fileUrl);
-        const arrayBuffer = await imageResponse.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        return { imageResponse, buffer };
+        if (imageResponse) {
+          const arrayBuffer = await imageResponse.arrayBuffer();
+          if (arrayBuffer) {
+            const buffer = await Buffer.from(arrayBuffer);
+            if (buffer) {
+              return { imageResponse, buffer };
+            }
+          }
+        }
       }
       return;
     } catch (error) {
