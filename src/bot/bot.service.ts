@@ -939,7 +939,7 @@ export class BotService {
                 latestSession.price,
                 latestSession.category,
                 latestSession.numberOfTickets,
-                fileUrl,
+                fileId,
                 latestSession.walletAddress,
               );
               await this.eventBot.sendPhoto(msg.chat.id, fileId);
