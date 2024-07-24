@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .ticket {
+            background-color: white;
+            width: 350px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: scroll;
+            position: relative;
+        }
+
+        .ticket::before,
+        .ticket::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #e0f7e9;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .ticket::before {
+            left: -10px;
+        }
+
+        .ticket::after {
+            right: -10px;
+        }
+
+        .header {
+            background-color: #54a8ec;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 18px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .content img {
+            width: 100%;
+            max-width: 150px;
+            margin: 0 auto 20px;
+            display: block;
+        }
+
+        .details {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .details p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .value {
+            display: block;
+            color: #333;
+            margin-top: 2px;
+        }
+
+        @media (orientation: landscape) {
+            .ticket {
+                width: 500px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ticket">
+        <div class="header">
+            <h2>Event Details</h2>
+        </div>
+        <div class="content">
+            <img src="https://i.ibb.co/PxqQCTQ/eventblinkbot-high-resolution-logo.jpg" alt="QR Code">
+            <div class="details">
+                <p><span class="label">EVENT NAME</span><span class="value">Superteam</span></p>
+                <p><span class="label">EVENT DESCRIPTION</span><span class="value">Come and eat food</span></p>
+                <p><span class="label">LOCATION</span><span class="value">📍 Adhi Wicaksono</span></p>
+                <p><span class="label">START DATE</span><span class="value">30 June 2017 at 7:00 pm</span></p>
+                <p><span class="label">END DATE</span><span class="value">30 June 2017 at 7:00 pm</span></p>
+                <p><span class="label">CONTACT</span><span class="value">090018712727, @X.com</span></p>
+                <p><span class="label">EMAIL</span><span class="value">✉️ eventBlink@mail.com</span></p>
+                <p><span class="label">TICKET CATEGORY</span><span class="value">VIP</span></p>
+                <p><span class="label">PRICE</span><span class="value">0.05 SOL</span></p>
+                <p><span class="label">NUMBER OF TICKETS</span><span class="value">20 🎟️</span></p>
+                <p><span class="label">WALLET ADDRESS</span><span
+                        class="value">7eBmtW8CG1zJ6mEYbTpbLRtjD1BLHdQdU5Jc8Uip42eE</span></p>
+                <p><span class="label">VALID UNTIL</span><span class="value">30 June 2017 at 7:00 pm</span></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

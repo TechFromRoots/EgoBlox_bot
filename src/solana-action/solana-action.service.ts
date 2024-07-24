@@ -25,7 +25,7 @@ export class SolanaActionService {
   getAction = async (baseUrl: string, eventId: string) => {
     try {
       console.log(baseUrl);
-      const eventTicket = await this.database.session.findFirst({
+      const eventTicket = await this.database.event.findFirst({
         where: { id: +eventId },
       });
 

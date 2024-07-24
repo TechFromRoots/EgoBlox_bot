@@ -107,22 +107,38 @@ export class BotService {
           }),
         });
       }
-      // Regular expression pattern to match the format DD/MM/YYYY
-      const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
-      // Check if the date string matches the pattern
-      if (!msg.photo) {
-        if (datePattern.test(msg.text.trim())) {
-          const latestSession = await this.databaseService.session.findFirst({
-            where: { chat_id: msg.chat.id },
-          });
-          if (
-            JSON.parse(latestSession.startDatePromptId)['messageId'].length !==
-              0 &&
-            !latestSession.startDate
-          ) {
+
+      if (msg.photo) {
+        const latestSession = await this.databaseService.session.findFirst({
+          where: { chat_id: msg.chat.id },
+        });
+        if (
+          !latestSession.media &&
+          JSON.parse(latestSession.mediaPromptId)['messageId'].length !== 0
+        ) {
+          const fileId = msg.photo[msg.photo.length - 1].file_id;
+          const file = await this.eventBot.getFile(fileId);
+          if (file) {
+            // const filePath = file.file_path;
+            // const fileUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
+            // console.log(fileUrl);
+            // const response = await fetch(
+            //   `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`,
+            // );
+            // console.log(response.url);
+            // Fetch the image from Telegram
+            // const imageResponse = await fetch(fileUrl);
+            // const arrayBuffer = await imageResponse.arrayBuffer();
+            // const buffer = Buffer.from(arrayBuffer);
+            // console.log('image response :', buffer);
+
+            // await this.eventBot.sendMessage(
+            //   msg.chat.id,
+            //   `Image received! You can download it from: ${fileId}`,
+            // );
             const update = await this.updateUserSession(msg.chat.id, {
-              startDate: msg.text.trim(),
-              startDatePromptId: JSON.stringify({ messageId: [] }),
+              media: fileId,
+              mediaPromptId: JSON.stringify({ messageId: [] }),
               userAnswerId: JSON.stringify({ messageId: [] }),
             });
             if (update) {
@@ -130,7 +146,7 @@ export class BotService {
                 latestSession.eventName,
                 latestSession.description,
                 latestSession.location,
-                msg.text.trim(),
+                latestSession.startDate,
                 latestSession.startTime,
                 latestSession.endDate,
                 latestSession.endTime,
@@ -139,9 +155,10 @@ export class BotService {
                 latestSession.price,
                 latestSession.category,
                 latestSession.numberOfTickets,
-                latestSession.media,
+                fileId,
                 latestSession.walletAddress,
               );
+              await this.eventBot.sendPhoto(msg.chat.id, fileId);
               await this.eventBot.editMessageReplyMarkup(
                 { inline_keyboard: markup.keyBoardMarkup },
                 {
@@ -149,140 +166,18 @@ export class BotService {
                   message_id: Number(latestSession.bookingMarkdownId),
                 },
               );
-            }
-            // loop through startDate prompt to delete them
-            for (
-              let i = 0;
-              i <
-              JSON.parse(latestSession.startDatePromptId)['messageId'].length;
-              i++
-            ) {
-              await this.eventBot.deleteMessage(
-                msg.chat.id,
-                JSON.parse(latestSession.startDatePromptId)['messageId'][i],
-              );
-            }
-            // loop through to delet all userReply
-            for (
-              let i = 0;
-              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
-              i++
-            ) {
-              await this.eventBot.deleteMessage(
-                msg.chat.id,
-                JSON.parse(latestSession.userAnswerId)['messageId'][i],
-              );
-            }
-          } else if (
-            // this will handle event enddate
-            JSON.parse(session.endDatePromptId)['messageId'].length !== 0 &&
-            !session.returnDate
-          ) {
-            const update = await this.updateUserSession(msg.chat.id, {
-              endDate: msg.text.trim(),
-              endDatePromptId: JSON.stringify({ messageId: [] }),
-              userAnswerId: JSON.stringify({ messageId: [] }),
-            });
 
-            if (update) {
-              const markup = eventDetails_en(
-                latestSession.eventName,
-                latestSession.description,
-                latestSession.location,
-                latestSession.startDate,
-                latestSession.startTime,
-                msg.text.trim(),
-                latestSession.endTime,
-                latestSession.contacts,
-                latestSession.email,
-                latestSession.price,
-                latestSession.category,
-                latestSession.numberOfTickets,
-                latestSession.media,
-                latestSession.walletAddress,
-              );
-              await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.keyBoardMarkup },
-                {
-                  chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
-                },
-              );
-            }
-
-            // loop through startDate prompt to delete them
-            for (
-              let i = 0;
-              i < JSON.parse(latestSession.endDatePromptId)['messageId'].length;
-              i++
-            ) {
-              await this.eventBot.deleteMessage(
-                msg.chat.id,
-                JSON.parse(latestSession.endDatePromptId)['messageId'][i],
-              );
-            }
-            // loop through to delet all userReply
-            for (
-              let i = 0;
-              i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
-              i++
-            ) {
-              await this.eventBot.deleteMessage(
-                msg.chat.id,
-                JSON.parse(latestSession.userAnswerId)['messageId'][i],
-              );
-            }
-          }
-        } else {
-          console.log('Not a date');
-        }
-      }
-
-      // this detects the time format
-      function detectTimeFormat(str) {
-        const regex =
-          /\b(?:0?[1-9]|1[0-2]):[0-5][0-9]\s?[ap]m\s?[a-zA-Z]{3}\b/i;
-        const match = str.match(regex);
-        if (match) {
-          return {
-            time: match[0],
-            originalString: str,
-          };
-        }
-        return null;
-      }
-
-      if (!msg.photo) {
-        const time = detectTimeFormat(msg.text.trim());
-
-        if (time !== null && time.time !== '') {
-          const latestSession = await this.databaseService.session.findFirst({
-            where: { chat_id: msg.chat.id },
-          });
-          if (
-            !latestSession.startTime &&
-            JSON.parse(latestSession.startTimePromptId)['messageId'].length !==
-              0
-          ) {
-            console.log('time :', time.time);
-            const update = await this.updateUserSession(msg.chat.id, {
-              startTime: time.time,
-              startTimePromptId: JSON.stringify({ messageId: [] }),
-              userAnswerId: JSON.stringify({ messageId: [] }),
-            });
-            if (update) {
               const promises = [];
               // loop through departure prompt to delete them
               for (
                 let i = 0;
-                i <
-                JSON.parse(latestSession.startTimePromptId)['messageId'].length;
+                i < JSON.parse(latestSession.mediaPromptId)['messageId'].length;
                 i++
               ) {
                 promises.push(
                   await this.eventBot.deleteMessage(
                     msg.chat.id,
-                    JSON.parse(latestSession.startTimePromptId)['messageId'][i],
+                    JSON.parse(latestSession.mediaPromptId)['messageId'][i],
                   ),
                 );
               }
@@ -299,74 +194,185 @@ export class BotService {
                   ),
                 );
               }
+            }
+          }
+          return;
+        }
+        return;
+      }
+      // Regular expression pattern to match the format DD/MM/YYYY
+      const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
+      // Check if the date string matches the pattern
 
-              const markup = eventDetails_en(
-                latestSession.eventName,
-                latestSession.description,
-                latestSession.location,
-                latestSession.startDate,
-                msg.text.trim(),
-                latestSession.endDate,
-                latestSession.endTime,
-                latestSession.contacts,
-                latestSession.email,
-                latestSession.price,
-                latestSession.category,
-                latestSession.numberOfTickets,
-                latestSession.media,
-                latestSession.walletAddress,
-              );
-              await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.keyBoardMarkup },
-                {
-                  chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
-                },
-              );
-            }
-          } else if (
-            !latestSession.endTime &&
-            JSON.parse(latestSession.endTimePromptId)['messageId'].length !== 0
+      if (datePattern.test(msg.text.trim())) {
+        const latestSession = await this.databaseService.session.findFirst({
+          where: { chat_id: msg.chat.id },
+        });
+        if (
+          JSON.parse(latestSession.startDatePromptId)['messageId'].length !==
+            0 &&
+          !latestSession.startDate
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            startDate: msg.text.trim(),
+            startDatePromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              msg.text.trim(),
+              latestSession.startTime,
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+          }
+          // loop through startDate prompt to delete them
+          for (
+            let i = 0;
+            i < JSON.parse(latestSession.startDatePromptId)['messageId'].length;
+            i++
           ) {
-            const update = await this.updateUserSession(msg.chat.id, {
-              endTime: time.time,
-              endTimePromptId: JSON.stringify({ messageId: [] }),
-              userAnswerId: JSON.stringify({ messageId: [] }),
-            });
-            if (update) {
-              const markup = eventDetails_en(
-                latestSession.eventName,
-                latestSession.description,
-                latestSession.location,
-                latestSession.startDate,
-                latestSession.startTime,
-                latestSession.endDate,
-                msg.text.trim(),
-                latestSession.contacts,
-                latestSession.email,
-                latestSession.price,
-                latestSession.category,
-                latestSession.numberOfTickets,
-                latestSession.media,
-                latestSession.walletAddress,
-              );
-              await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.keyBoardMarkup },
-                {
-                  chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
-                },
-              );
-            }
+            await this.eventBot.deleteMessage(
+              msg.chat.id,
+              JSON.parse(latestSession.startDatePromptId)['messageId'][i],
+            );
+          }
+          // loop through to delet all userReply
+          for (
+            let i = 0;
+            i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+            i++
+          ) {
+            await this.eventBot.deleteMessage(
+              msg.chat.id,
+              JSON.parse(latestSession.userAnswerId)['messageId'][i],
+            );
+          }
+        } else if (
+          // this will handle event enddate
+          JSON.parse(session.endDatePromptId)['messageId'].length !== 0 &&
+          !session.returnDate
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            endDate: msg.text.trim(),
+            endDatePromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              msg.text.trim(),
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+          }
+
+          // loop through startDate prompt to delete them
+          for (
+            let i = 0;
+            i < JSON.parse(latestSession.endDatePromptId)['messageId'].length;
+            i++
+          ) {
+            await this.eventBot.deleteMessage(
+              msg.chat.id,
+              JSON.parse(latestSession.endDatePromptId)['messageId'][i],
+            );
+          }
+          // loop through to delet all userReply
+          for (
+            let i = 0;
+            i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+            i++
+          ) {
+            await this.eventBot.deleteMessage(
+              msg.chat.id,
+              JSON.parse(latestSession.userAnswerId)['messageId'][i],
+            );
+          }
+        }
+      } else {
+        console.log('Not a date');
+      }
+
+      // this detects the time format
+      function detectTimeFormat(str) {
+        const regex =
+          /\b(?:0?[1-9]|1[0-2]):[0-5][0-9]\s?[ap]m\s?[a-zA-Z]{3}\b/i;
+        const match = str.match(regex);
+        if (match) {
+          return {
+            time: match[0],
+            originalString: str,
+          };
+        }
+        return null;
+      }
+
+      const time = detectTimeFormat(msg.text.trim());
+
+      if (time !== null && time.time !== '') {
+        const latestSession = await this.databaseService.session.findFirst({
+          where: { chat_id: msg.chat.id },
+        });
+        if (
+          !latestSession.startTime &&
+          JSON.parse(latestSession.startTimePromptId)['messageId'].length !== 0
+        ) {
+          console.log('time :', time.time);
+          const update = await this.updateUserSession(msg.chat.id, {
+            startTime: time.time,
+            startTimePromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const promises = [];
             // loop through departure prompt to delete them
             for (
               let i = 0;
-              i < JSON.parse(latestSession.endTimePromptId)['messageId'].length;
+              i <
+              JSON.parse(latestSession.startTimePromptId)['messageId'].length;
               i++
             ) {
-              await this.eventBot.deleteMessage(
-                msg.chat.id,
-                JSON.parse(latestSession.endTimePromptId)['messageId'][i],
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.startTimePromptId)['messageId'][i],
+                ),
               );
             }
             // loop through to delet all userReply
@@ -375,17 +381,99 @@ export class BotService {
               i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
               i++
             ) {
-              await this.eventBot.deleteMessage(
-                msg.chat.id,
-                JSON.parse(latestSession.userAnswerId)['messageId'][i],
+              promises.push(
+                await this.eventBot.deleteMessage(
+                  msg.chat.id,
+                  JSON.parse(latestSession.userAnswerId)['messageId'][i],
+                ),
               );
             }
-          } else {
-            console.log('nothing');
+
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              msg.text.trim(),
+              latestSession.endDate,
+              latestSession.endTime,
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+          }
+        } else if (
+          !latestSession.endTime &&
+          JSON.parse(latestSession.endTimePromptId)['messageId'].length !== 0
+        ) {
+          const update = await this.updateUserSession(msg.chat.id, {
+            endTime: time.time,
+            endTimePromptId: JSON.stringify({ messageId: [] }),
+            userAnswerId: JSON.stringify({ messageId: [] }),
+          });
+          if (update) {
+            const markup = eventDetails_en(
+              latestSession.eventName,
+              latestSession.description,
+              latestSession.location,
+              latestSession.startDate,
+              latestSession.startTime,
+              latestSession.endDate,
+              msg.text.trim(),
+              latestSession.contacts,
+              latestSession.email,
+              latestSession.price,
+              latestSession.category,
+              latestSession.numberOfTickets,
+              latestSession.media,
+              latestSession.walletAddress,
+            );
+            await this.eventBot.editMessageReplyMarkup(
+              { inline_keyboard: markup.keyBoardMarkup },
+              {
+                chat_id: msg.chat.id,
+                message_id: Number(latestSession.bookingMarkdownId),
+              },
+            );
+          }
+          // loop through departure prompt to delete them
+          for (
+            let i = 0;
+            i < JSON.parse(latestSession.endTimePromptId)['messageId'].length;
+            i++
+          ) {
+            await this.eventBot.deleteMessage(
+              msg.chat.id,
+              JSON.parse(latestSession.endTimePromptId)['messageId'][i],
+            );
+          }
+          // loop through to delet all userReply
+          for (
+            let i = 0;
+            i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
+            i++
+          ) {
+            await this.eventBot.deleteMessage(
+              msg.chat.id,
+              JSON.parse(latestSession.userAnswerId)['messageId'][i],
+            );
           }
         } else {
-          console.log('not time');
+          console.log('nothing');
         }
+      } else {
+        console.log('not time');
       }
 
       // parse incoming message and handle commands
@@ -556,7 +644,7 @@ export class BotService {
             );
 
             const promises = [];
-            // loop through departure prompt to delete them
+            // loop through location prompt to delete them
             for (
               let i = 0;
               i <
@@ -901,91 +989,6 @@ export class BotService {
             }
           }
         } else if (
-          msg.photo &&
-          !latestSession.media &&
-          JSON.parse(latestSession.mediaPromptId)['messageId'].length !== 0
-        ) {
-          const fileId = msg.photo[msg.photo.length - 1].file_id;
-          const file = await this.eventBot.getFile(fileId);
-          if (file) {
-            // const filePath = file.file_path;
-            // const fileUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
-            // console.log(fileUrl);
-            // const response = await fetch(
-            //   `https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`,
-            // );
-            // console.log(response.url);
-            // Fetch the image from Telegram
-            // const imageResponse = await fetch(fileUrl);
-            // const arrayBuffer = await imageResponse.arrayBuffer();
-            // const buffer = Buffer.from(arrayBuffer);
-            // console.log('image response :', buffer);
-
-            await this.eventBot.sendMessage(
-              msg.chat.id,
-              `Image received! You can download it from: ${fileId}`,
-            );
-            const update = await this.updateUserSession(msg.chat.id, {
-              media: fileId,
-              mediaPromptId: JSON.stringify({ messageId: [] }),
-              userAnswerId: JSON.stringify({ messageId: [] }),
-            });
-            if (update) {
-              const markup = eventDetails_en(
-                latestSession.eventName,
-                latestSession.description,
-                latestSession.location,
-                latestSession.startDate,
-                latestSession.startTime,
-                latestSession.endDate,
-                latestSession.endTime,
-                latestSession.contacts,
-                latestSession.email,
-                latestSession.price,
-                latestSession.category,
-                latestSession.numberOfTickets,
-                fileId,
-                latestSession.walletAddress,
-              );
-              await this.eventBot.sendPhoto(msg.chat.id, fileId);
-              await this.eventBot.editMessageReplyMarkup(
-                { inline_keyboard: markup.keyBoardMarkup },
-                {
-                  chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
-                },
-              );
-
-              const promises = [];
-              // loop through departure prompt to delete them
-              for (
-                let i = 0;
-                i < JSON.parse(latestSession.mediaPromptId)['messageId'].length;
-                i++
-              ) {
-                promises.push(
-                  await this.eventBot.deleteMessage(
-                    msg.chat.id,
-                    JSON.parse(latestSession.mediaPromptId)['messageId'][i],
-                  ),
-                );
-              }
-              // loop through to delet all userReply
-              for (
-                let i = 0;
-                i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
-                i++
-              ) {
-                promises.push(
-                  await this.eventBot.deleteMessage(
-                    msg.chat.id,
-                    JSON.parse(latestSession.userAnswerId)['messageId'][i],
-                  ),
-                );
-              }
-            }
-          }
-        } else if (
           !latestSession.walletAddress &&
           JSON.parse(latestSession.walletAddressPromptId)['messageId']
             .length !== 0
@@ -1053,10 +1056,7 @@ export class BotService {
             }
           }
         } else {
-          return await this.eventBot.sendMessage(
-            msg.chat.id,
-            `Processing command failed, please try again`,
-          );
+          return;
         }
       } catch (error) {
         console.error(error);
@@ -1281,8 +1281,90 @@ export class BotService {
           return await this.walletSelection(query.message.chat.id);
 
         case '/preview':
-          await this.eventBot.sendChatAction(chatId, 'typing');
-          return await this.previewEventDetails(query.message.chat.id);
+          try {
+            const session = await this.databaseService.session.findFirst({
+              where: { chat_id: chatId },
+            });
+            if (session) {
+              await this.eventBot.sendChatAction(chatId, 'typing');
+              return await this.previewEventDetails(
+                query.message.chat.id,
+                session,
+              );
+            }
+            return await this.eventBot.sendMessage(
+              query.message.chat.id,
+              `No Event Data to preview`,
+            );
+          } catch (error) {
+            console.log(error);
+            return await this.eventBot.sendMessage(
+              query.message.chat.id,
+              `Processing command failed, please try again`,
+            );
+          }
+
+        case '/GenerateBlinkLink':
+          try {
+            const session = await this.databaseService.session.findFirst({
+              where: { chat_id: chatId },
+            });
+            if (session) {
+              const saveEvent = await this.databaseService.event.create({
+                data: {
+                  user: {
+                    connect: { chat_id: query.message.chat.id },
+                  },
+                  eventName: session.eventName,
+                  description: session.description,
+                  location: session.location,
+                  startDate: session.startDate,
+                  endDate: session.endDate,
+                  startTime: session.startTime,
+                  endTime: session.endTime,
+                  contacts: session.contacts,
+                  email: session.contacts,
+                  price: session.price,
+                  category: session.category,
+                  numberOfTickets: session.numberOfTickets,
+                  media: session.media,
+                  walletAddress: session.walletAddress,
+                },
+              });
+
+              if (saveEvent) {
+                return await this.eventBot.sendMessage(
+                  query.message.chat.id,
+                  `Blink Link created successfully ✅:\nhttp://localhost:3001/solana-action/${saveEvent.id}`,
+                  {
+                    reply_markup: {
+                      inline_keyboard: [
+                        [
+                          {
+                            text: `Manage Event 🎟️`,
+                            callback_data: JSON.stringify({
+                              command: '/manageEvent',
+                              // bookingDetailsDbId: Number(dbId),
+                            }),
+                          },
+                        ],
+                      ],
+                    },
+                  },
+                );
+              }
+            }
+            return await this.eventBot.sendMessage(
+              query.message.chat.id,
+              `Error Generating Blink, try again`,
+            );
+          } catch (error) {
+            console.log(error);
+            return await this.eventBot.sendMessage(
+              query.message.chat.id,
+              `Processing command failed, please try again`,
+            );
+          }
 
         // close opened markup and delete result
         case '/closedelete':
@@ -1291,6 +1373,13 @@ export class BotService {
             where: { chat_id: chatId },
           });
           //Number(bookingDetailsDbId)
+          return await this.eventBot.deleteMessage(
+            query.message.chat.id,
+            query.message.message_id,
+          );
+
+        case '/close':
+          await this.eventBot.sendChatAction(query.message.chat.id, 'typing');
           return await this.eventBot.deleteMessage(
             query.message.chat.id,
             query.message.message_id,
@@ -1943,9 +2032,9 @@ export class BotService {
     }
   };
 
-  previewEventDetails = async (chatId) => {
+  previewEventDetails = async (chatId, data) => {
     try {
-      const ticketPreview = await this.ticketService.generateTicketShot();
+      const ticketPreview = await this.ticketService.generateReviewShot(data);
       if (ticketPreview) {
         console.log('this is preview :', ticketPreview);
         const sentPreview = await this.eventBot.sendPhoto(
@@ -1953,14 +2042,23 @@ export class BotService {
           ticketPreview,
           {
             parse_mode: 'HTML',
-            caption: `Ticket Preview`,
+            caption: `Event Detail Preview`,
             reply_markup: {
               inline_keyboard: [
                 [
                   {
-                    text: '❌ Close',
+                    text: `Generate Ticket 🎟️\nBLInk`,
                     callback_data: JSON.stringify({
-                      command: '/closedelete',
+                      command: '/GenerateBlinkLink',
+                      // bookingDetailsDbId: Number(dbId),
+                    }),
+                  },
+                ],
+                [
+                  {
+                    text: '❌ Close Preview',
+                    callback_data: JSON.stringify({
+                      command: '/close',
                       // bookingDetailsDbId: Number(dbId),
                     }),
                   },

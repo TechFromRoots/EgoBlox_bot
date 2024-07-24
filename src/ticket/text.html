@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #9ecbf0;
+        }
+
+        .ticket {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 750px;
+            /* Default width */
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 500px;
+            /* Minimum height */
+            overflow: auto;
+            /* Allows scrolling if content overflows */
+        }
+
+        .ticket h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .ticket p {
+            margin: 5px 0;
+            font-size: 14px;
+            word-wrap: break-word;
+            /* Ensures text wraps within container */
+        }
+
+        .ticket .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 0px;
+        }
+
+        .ticket .header h1 {
+            font-size: 24px;
+            margin: 0px;
+        }
+
+        .ticket .trade {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .ticket .details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 5px;
+            font-size: 14px;
+            flex-wrap: wrap;
+            /* Allows wrapping of content if necessary */
+        }
+
+        .ticket .details div {
+            flex: 1;
+            overflow: hidden;
+            /* Hide overflow content */
+        }
+
+        .ticket .qr-code {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 10px;
+            /* Margin added to separate QR code from text */
+        }
+
+        .ticket .qr-code img {
+            width: 200px;
+            height: 200px;
+            border: 1px solid #ccc;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .value {
+            display: block;
+            color: #333;
+            margin-top: 1px;
+        }
+
+        .ticket .footer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #999;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ticket">
+        <div class="header">
+            <h1>Event Details</h1>
+            <p class="trade">EventBlink Bot</p>
+        </div>
+        <div class="details">
+            <div>
+                <p><span class="label">EVENT NAME</span><span class="value">Superteam</span></p>
+                <p><span class="label">EVENT DESCRIPTION</span><span class="value">The .ticket class now includes
+                        display: flex and flex-direction: column to </span></p>
+                <p><span class="label">LOCATION</span><span class="value">📍 Adhi Wicaksono</span></p>
+                <p><span class="label">START DATE</span><span class="value">30 June 2017 at 7:00 pm</span></p>
+                <p><span class="label">END DATE</span><span class="value">30 June 2017 at 7:00 pm</span></p>
+                <p><span class="label">CONTACT</span><span class="value">090018712727, @X.com</span></p>
+                <p><span class="label">EMAIL</span><span class="value">✉️ eventBlink@mail.com</span></p>
+                <p><span class="label">TICKET CATEGORY</span><span class="value">VIP</span></p>
+                <p><span class="label">PRICE</span><span class="value">0.05 SOL</span></p>
+                <p><span class="label">NUMBER OF TICKETS</span><span class="value">20 🎟️</span></p>
+                <p><span class="label">WALLET ADDRESS</span><span
+                        class="value">7eBmtW8CG1zJ6mEYbTpbLRtjD1BLHdQdU5Jc8Uip42eE</span></p>
+                <p><span class="label">VALID UNTIL</span><span class="value">30 June 2017 at 7:00 pm</span></p>
+            </div>
+            <div class="qr-code">
+                <img src="https://i.ibb.co/PxqQCTQ/eventblinkbot-high-resolution-logo.jpg" alt="QR Code">
+            </div>
+        </div>
+        <div class="footer">
+            &copy; 2024 EventBlink Bot - All Rights Reserved.
+        </div>
+    </div>
+</body>
+
+</html>
