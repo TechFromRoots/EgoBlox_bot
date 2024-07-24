@@ -8,6 +8,7 @@ import {
 } from './markups';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
+import { TicketService } from 'src/ticket/ticket.service';
 
 const token = process.env.TELEGRAM_TOKEN;
 
@@ -20,7 +21,10 @@ export class BotService {
   private startedChatting = {};
   private usedCodes = [];
 
-  constructor(private readonly databaseService: DatabaseService) {
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly ticketService: TicketService,
+  ) {
     this.eventBot = new TelegramBot(token, { polling: true });
     // event listerner for incomning messages
     this.eventBot.on('message', this.handleRecievedMessages);
@@ -1941,31 +1945,34 @@ export class BotService {
 
   previewEventDetails = async (chatId) => {
     try {
-      const walletPrompt = await this.eventBot.sendMessage(
-        chatId,
-        'Enter your wallet Address',
-        {
-          reply_markup: {
-            force_reply: true,
+      const ticketPreview = await this.ticketService.generateTicketShot();
+      if (ticketPreview) {
+        console.log('this is preview :', ticketPreview);
+        const sentPreview = await this.eventBot.sendPhoto(
+          chatId,
+          ticketPreview,
+          {
+            parse_mode: 'HTML',
+            caption: `Ticket Preview`,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: '❌ Close',
+                    callback_data: JSON.stringify({
+                      command: '/closedelete',
+                      // bookingDetailsDbId: Number(dbId),
+                    }),
+                  },
+                ],
+              ],
+            },
           },
-        },
-      );
-      const session = await this.databaseService.session.findFirst({
-        where: { chat_id: chatId },
-      });
-      if (session) {
-        const promptIds = JSON.parse(session.walletAddressPromptId);
-        console.log('prompts :', promptIds['messageId']);
-        await this.updateUserSession(chatId, {
-          walletAddress: null,
-          walletAddressPromptId: JSON.stringify({
-            messageId: [
-              ...JSON.parse(session.walletAddressPromptId)['messageId'],
-              walletPrompt.message_id,
-            ],
-          }),
-        });
-        return;
+        );
+
+        if (sentPreview) {
+          console.log(sentPreview);
+        }
       }
       return;
     } catch (error) {
