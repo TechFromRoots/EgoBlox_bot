@@ -157,13 +157,14 @@ export class BotService {
                 latestSession.numberOfTickets,
                 fileId,
                 latestSession.walletAddress,
+                latestSession.eventDetailMarkdownId,
               );
               await this.eventBot.sendPhoto(msg.chat.id, fileId);
               await this.eventBot.editMessageReplyMarkup(
                 { inline_keyboard: markup.keyBoardMarkup },
                 {
                   chat_id: msg.chat.id,
-                  message_id: Number(latestSession.bookingMarkdownId),
+                  message_id: Number(latestSession.eventDetailMarkdownId),
                 },
               );
 
@@ -234,12 +235,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
           }
@@ -292,12 +294,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
           }
@@ -404,12 +407,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
           }
@@ -438,12 +442,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
           }
@@ -506,13 +511,14 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
 
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -571,12 +577,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -634,12 +641,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -697,12 +705,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -759,12 +768,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -821,12 +831,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -883,12 +894,13 @@ export class BotService {
               latestSession.numberOfTickets,
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -947,12 +959,13 @@ export class BotService {
               msg.text.trim(),
               latestSession.media,
               latestSession.walletAddress,
+              latestSession.eventDetailMarkdownId,
             );
             await this.eventBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -1019,7 +1032,7 @@ export class BotService {
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
-                message_id: Number(latestSession.bookingMarkdownId),
+                message_id: Number(latestSession.eventDetailMarkdownId),
               },
             );
 
@@ -1075,6 +1088,7 @@ export class BotService {
     this.logger.debug(query);
     let command: string;
     let sourceId: string;
+    let markdownId: string;
     const first_name = query.from.first_name;
     // const last_name = query.from.last_name;
     // const user_Id = query.from.id;
@@ -1093,6 +1107,7 @@ export class BotService {
     if (isJSON(query.data)) {
       command = JSON.parse(query.data).command;
       sourceId = JSON.parse(query.data).sourceId;
+      markdownId = JSON.parse(query.data).eventDetailsId;
     } else {
       command = query.data;
     }
@@ -1281,6 +1296,7 @@ export class BotService {
           return await this.walletSelection(query.message.chat.id);
 
         case '/preview':
+          await this.eventBot.sendChatAction(chatId, 'typing');
           try {
             const session = await this.databaseService.session.findFirst({
               where: { chat_id: chatId },
@@ -1305,11 +1321,22 @@ export class BotService {
           }
 
         case '/GenerateBlinkLink':
+          await this.eventBot.sendChatAction(chatId, 'typing');
           try {
             const session = await this.databaseService.session.findFirst({
-              where: { chat_id: chatId },
+              where: {
+                chat_id: chatId,
+                eventDetailMarkdownId: Number(markdownId),
+              },
             });
-            if (session) {
+            const existingEvent = await this.databaseService.event.findFirst({
+              where: {
+                chat_id: chatId,
+                eventDetailMarkdownId: Number(markdownId),
+              },
+            });
+            if (session && !existingEvent) {
+              // save the event
               const saveEvent = await this.databaseService.event.create({
                 data: {
                   user: {
@@ -1329,22 +1356,42 @@ export class BotService {
                   numberOfTickets: session.numberOfTickets,
                   media: session.media,
                   walletAddress: session.walletAddress,
+                  eventDetailMarkdownId: Number(markdownId),
                 },
               });
 
               if (saveEvent) {
+                const url = `http://localhost:3001/solana-action/${saveEvent.id}`;
                 return await this.eventBot.sendMessage(
                   query.message.chat.id,
-                  `Blink Link created successfully ✅:\nhttp://localhost:3001/solana-action/${saveEvent.id}`,
+                  `Blink Link created successfully ✅:\n<a href="${url}">${url}</a>`,
                   {
+                    parse_mode: 'HTML',
                     reply_markup: {
                       inline_keyboard: [
+                        [
+                          {
+                            text: `View on Dialect`,
+                            url: `https://dial.to/?action=solana-action:http://localhost:3001/solana-action/${saveEvent.id}`,
+                          },
+                        ],
                         [
                           {
                             text: `Manage Event 🎟️`,
                             callback_data: JSON.stringify({
                               command: '/manageEvent',
-                              // bookingDetailsDbId: Number(dbId),
+                              eventDetailsId: Number(
+                                saveEvent.eventDetailMarkdownId,
+                              ),
+                            }),
+                          },
+                          {
+                            text: '❌ Close',
+                            callback_data: JSON.stringify({
+                              command: '/close',
+                              eventDetailsId: Number(
+                                saveEvent.eventDetailMarkdownId,
+                              ),
                             }),
                           },
                         ],
@@ -1353,6 +1400,45 @@ export class BotService {
                   },
                 );
               }
+            } else if (existingEvent) {
+              const url = `https://localhost:3001/solana-action/${existingEvent.id}`;
+              return await this.eventBot.sendMessage(
+                query.message.chat.id,
+                `Here is your BLINK link:\n<a href="${url}">${url}</a>`,
+                {
+                  parse_mode: 'HTML',
+                  reply_markup: {
+                    inline_keyboard: [
+                      [
+                        {
+                          text: `View on Dialect`,
+                          url: `https://dial.to/?action=solana-action:http://localhost:3001/solana-action/${existingEvent.id}`,
+                        },
+                      ],
+                      [
+                        {
+                          text: `Manage Event 🎟️`,
+                          callback_data: JSON.stringify({
+                            command: '/manageEvent',
+                            eventDetailsId: Number(
+                              existingEvent.eventDetailMarkdownId,
+                            ),
+                          }),
+                        },
+                        {
+                          text: '❌ Close',
+                          callback_data: JSON.stringify({
+                            command: '/close',
+                            eventDetailsId: Number(
+                              existingEvent.eventDetailMarkdownId,
+                            ),
+                          }),
+                        },
+                      ],
+                    ],
+                  },
+                },
+              );
             }
             return await this.eventBot.sendMessage(
               query.message.chat.id,
@@ -1466,7 +1552,7 @@ export class BotService {
         { reply_markup: eventDetailMarkup },
       );
       await this.updateUserSession(chatId, {
-        bookingMarkdownId: eventDetails.message_id,
+        eventDetailMarkdownId: eventDetails.message_id,
       });
       return eventDetails;
     } catch (error) {
@@ -1510,7 +1596,7 @@ export class BotService {
 
   async createSession(
     chat_id: number,
-    BookingSessionDto: Prisma.SessionCreateInput,
+    eventSessionDto: Prisma.SessionCreateInput,
   ) {
     try {
       const exist = await this.databaseService.session.findFirst({
@@ -1518,10 +1604,10 @@ export class BotService {
       });
       if (!exist) {
         return this.databaseService.session.create({
-          data: BookingSessionDto,
+          data: eventSessionDto,
         });
       } else {
-        return this.updateUserSession(chat_id, BookingSessionDto);
+        return this.updateUserSession(chat_id, eventSessionDto);
       }
     } catch (error) {
       console.error(error);
@@ -2050,7 +2136,7 @@ export class BotService {
                     text: `Generate Ticket 🎟️\nBLInk`,
                     callback_data: JSON.stringify({
                       command: '/GenerateBlinkLink',
-                      // bookingDetailsDbId: Number(dbId),
+                      eventDetailsId: Number(data.eventDetailMarkdownId),
                     }),
                   },
                 ],
@@ -2059,7 +2145,7 @@ export class BotService {
                     text: '❌ Close Preview',
                     callback_data: JSON.stringify({
                       command: '/close',
-                      // bookingDetailsDbId: Number(dbId),
+                      eventDetailsId: Number(data.eventDetailMarkdownId),
                     }),
                   },
                 ],

@@ -13,6 +13,7 @@ export const eventDetails_en = (
   number_of_Tickets?,
   image?,
   walletAddress?,
+  markdownId?,
 ) => {
   const eventName = event_Name || '';
   const eventDescription = event_Description || '';
@@ -153,14 +154,14 @@ export const eventDetails_en = (
           text: 'Preview 👀',
           callback_data: JSON.stringify({
             command: '/preview',
-            // bookingDetailsDbId: Number(dbId),
+            eventDetailsId: Number(markdownId),
           }),
         },
         {
           text: '❌ Close',
           callback_data: JSON.stringify({
             command: '/closedelete',
-            // bookingDetailsDbId: Number(dbId),
+            eventDetailsId: Number(markdownId),
           }),
         },
       ],
@@ -169,7 +170,7 @@ export const eventDetails_en = (
           text: `Generate Ticket 🎟️\nBLInk`,
           callback_data: JSON.stringify({
             command: '/GenerateBlinkLink',
-            // bookingDetailsDbId: Number(dbId),
+            eventDetailsId: Number(markdownId),
           }),
         },
       ],

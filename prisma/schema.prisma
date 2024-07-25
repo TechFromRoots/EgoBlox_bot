@@ -55,29 +55,28 @@ model Session {
   numberOfTicketsPromptId String?
   mediaPromptId           String?
   walletAddressPromptId   String?
-  bookingMarkdownId       BigInt?
+  eventDetailMarkdownId   BigInt?
   user                    User    @relation(fields: [chat_id], references: [chat_id], onDelete: Cascade)
   chat_id                 BigInt
 }
 
 model Event {
-  id                 Int     @id @default(autoincrement())
-  eventName          String?
-  description        String?
-  location           String?
-  startDate          String?
-  endDate            String?
-  startTime          String?
-  endTime            String?
-  contacts           String?
-  email              String?
-  price              String?
-  category           String?
-  numberOfTickets    String?
-  media              String?
-  walletAddress      String?
-  botMarkdown        String?
-  botPreviewMarkdown String?
-  user               User    @relation(fields: [chat_id], references: [chat_id], onDelete: Cascade)
-  chat_id            BigInt
+  id                    Int     @id @default(autoincrement())
+  eventName             String?
+  description           String?
+  location              String?
+  startDate             String?
+  endDate               String?
+  startTime             String?
+  endTime               String?
+  contacts              String?
+  email                 String?
+  price                 String?
+  category              String?
+  numberOfTickets       String?
+  media                 String?
+  walletAddress         String?
+  eventDetailMarkdownId BigInt?
+  user                  User    @relation(fields: [chat_id], references: [chat_id], onDelete: Cascade)
+  chat_id               BigInt
 }
