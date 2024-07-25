@@ -36,7 +36,7 @@ export class SolanaActionService {
       if (eventTicket) {
         const payload: ActionGetResponse = {
           icon: eventTicket?.media
-            ? await new URL(`${baseURL}/bot/${eventTicket.media}`).toString()
+            ? `${baseURL}/bot/${eventTicket.media}`
             : `https://i.ibb.co/PxqQCTQ/eventblinkbot-high-resolution-logo.jpg`,
           title: eventTicket.eventName,
           description: eventTicket.description,
