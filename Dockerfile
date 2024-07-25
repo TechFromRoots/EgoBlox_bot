@@ -8,6 +8,9 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+# Copy the .env and .env.development files
+COPY .env .env.development ./
+
 RUN npm run build
 # Start the server using the production build
 CMD ["npm", "run", "start:prod"]
