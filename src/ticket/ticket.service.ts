@@ -3,8 +3,8 @@ import puppeteer, { Puppeteer } from 'puppeteer';
 
 const baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'https://eventblinkbot.onrender.com/'
-    : 'http://localhost:3001/';
+    ? 'https://eventblinkbot.onrender.com'
+    : 'http://localhost:3001';
 @Injectable()
 export class TicketService {
   generateTicketShot = async () => {
@@ -230,7 +230,7 @@ export class TicketService {
     const ticketCategory = data.category || '';
     const numberOfTickets = data.numberOfTickets || '';
     const eventImage = data.media
-      ? `baseURL/bot/${data.media}`
+      ? `${baseURL}/bot/${data.media}`
       : 'https://i.ibb.co/PxqQCTQ/eventblinkbot-high-resolution-logo.jpg';
     const organizerWallet = data.walletAddress || '';
     try {
@@ -377,7 +377,7 @@ export class TicketService {
                 <p><span class="label">VALID UNTIL:</span><span class="value">${endDate} at ${eventEndTime}</span></p>
             </div>
             <div class="qr-code">
-                <img src=${eventImage} alt="QR Code">
+                <img src=${eventImage} alt="Event media">
             </div>
         </div>
         <div class="footer">

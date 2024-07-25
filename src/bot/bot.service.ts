@@ -13,8 +13,8 @@ import { TicketService } from 'src/ticket/ticket.service';
 const token = process.env.TELEGRAM_TOKEN;
 const baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'https://eventblinkbot.onrender.com/'
-    : 'http://localhost:3001/';
+    ? 'https://eventblinkbot.onrender.com'
+    : 'http://localhost:3001';
 
 @Injectable()
 export class BotService {
