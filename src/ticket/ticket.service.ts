@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import puppeteer, { Puppeteer } from 'puppeteer';
 
+const baseURL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://eventblinkbot.onrender.com/'
+    : 'http://localhost:3001/';
 @Injectable()
 export class TicketService {
   generateTicketShot = async () => {
@@ -226,7 +230,7 @@ export class TicketService {
     const ticketCategory = data.category || '';
     const numberOfTickets = data.numberOfTickets || '';
     const eventImage = data.media
-      ? `http://localhost:3001/bot/${data.media}`
+      ? `baseURL/bot/${data.media}`
       : 'https://i.ibb.co/PxqQCTQ/eventblinkbot-high-resolution-logo.jpg';
     const organizerWallet = data.walletAddress || '';
     try {

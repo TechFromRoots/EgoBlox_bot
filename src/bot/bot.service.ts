@@ -11,6 +11,10 @@ import { Prisma } from '@prisma/client';
 import { TicketService } from 'src/ticket/ticket.service';
 
 const token = process.env.TELEGRAM_TOKEN;
+const baseURL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://eventblinkbot.onrender.com/'
+    : 'http://localhost:3001/';
 
 @Injectable()
 export class BotService {
@@ -1361,7 +1365,7 @@ export class BotService {
               });
 
               if (saveEvent) {
-                const url = `http://localhost:3001/solana-action/${saveEvent.id}`;
+                const url = `${baseURL}/solana-action/${saveEvent.id}`;
                 return await this.eventBot.sendMessage(
                   query.message.chat.id,
                   `Blink Link created successfully ✅:\n<a href="${url}">${url}</a>`,
@@ -1372,7 +1376,7 @@ export class BotService {
                         [
                           {
                             text: `View on Dialect`,
-                            url: `https://dial.to/?action=solana-action:http://localhost:3001/solana-action/${saveEvent.id}`,
+                            url: `https://dial.to/?action=solana-action:${baseURL}/solana-action/${saveEvent.id}`,
                           },
                         ],
                         [
@@ -1401,7 +1405,7 @@ export class BotService {
                 );
               }
             } else if (existingEvent) {
-              const url = `https://localhost:3001/solana-action/${existingEvent.id}`;
+              const url = `${baseURL}/solana-action/${existingEvent.id}`;
               return await this.eventBot.sendMessage(
                 query.message.chat.id,
                 `Here is your BLINK link:\n<a href="${url}">${url}</a>`,
@@ -1412,7 +1416,7 @@ export class BotService {
                       [
                         {
                           text: `View on Dialect`,
-                          url: `https://dial.to/?action=solana-action:http://localhost:3001/solana-action/${existingEvent.id}`,
+                          url: `https://dial.to/?action=solana-action:${baseURL}/solana-action/${existingEvent.id}`,
                         },
                       ],
                       [
