@@ -24,13 +24,10 @@ export class SolanaActionController {
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
-      console.log(req.headers['host']);
-      const baseUrl = `${req['protocol']}://${req.headers['host']}`;
-      console.log(baseUrl);
-      const responsePayload = await this.solanaActionService.getAction(
-        baseUrl,
-        id,
-      );
+      // console.log(req.headers['host']);
+      // const baseUrl = `${req['protocol']}://${req.headers['host']}`;
+      // console.log(baseUrl);
+      const responsePayload = await this.solanaActionService.getAction(id);
       if (responsePayload) {
         res.set(ACTIONS_CORS_HEADERS);
         return res.json(responsePayload);

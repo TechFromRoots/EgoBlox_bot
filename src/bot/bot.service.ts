@@ -10,10 +10,14 @@ import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { TicketService } from 'src/ticket/ticket.service';
 
-const token = process.env.TELEGRAM_TOKEN;
+const token =
+  process.env.NODE_ENV === 'production'
+    ? process.env.TELEGRAM_TOKEN
+    : process.env.TEST_TOKEN;
+
 const baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'https://eventblinkbot.onrender.com'
+    ? 'https://eventblink.xyz'
     : 'http://localhost:3001';
 
 @Injectable()
@@ -1340,6 +1344,18 @@ export class BotService {
               },
             });
             if (session && !existingEvent) {
+              if (!session.media) {
+                const defaultMedia = await this.generateEventMedia(
+                  query.message.chat.id,
+                  session,
+                );
+                if (defaultMedia) {
+                  return await this.updateUserSession(chatId, {
+                    media:
+                      defaultMedia.photo[defaultMedia.photo.length - 1].file_id,
+                  });
+                }
+              }
               // save the event
               const saveEvent = await this.databaseService.event.create({
                 data: {
@@ -1366,11 +1382,12 @@ export class BotService {
 
               if (saveEvent) {
                 const url = `${baseURL}/solana-action/${saveEvent.id}`;
-                return await this.eventBot.sendMessage(
+                return await this.eventBot.sendPhoto(
                   query.message.chat.id,
-                  `Blink Link created successfully ✅:\n<a href="${url}">${url}</a>`,
+                  saveEvent.media,
                   {
                     parse_mode: 'HTML',
+                    caption: `Blink Link created successfully ✅:\n<a href="${url}">${url}</a>`,
                     reply_markup: {
                       inline_keyboard: [
                         [
@@ -1405,12 +1422,77 @@ export class BotService {
                 );
               }
             } else if (existingEvent) {
+              const updateEvent = await this.databaseService.event.update({
+                where: { id: existingEvent.id },
+                data: {
+                  user: {
+                    connect: { chat_id: query.message.chat.id },
+                  },
+                  eventName: session.eventName,
+                  description: session.description,
+                  location: session.location,
+                  startDate: session.startDate,
+                  endDate: session.endDate,
+                  startTime: session.startTime,
+                  endTime: session.endTime,
+                  contacts: session.contacts,
+                  email: session.contacts,
+                  price: session.price,
+                  category: session.category,
+                  numberOfTickets: session.numberOfTickets,
+                  media: session.media,
+                  walletAddress: session.walletAddress,
+                  eventDetailMarkdownId: Number(markdownId),
+                },
+              });
+              if (updateEvent) {
+                const url = `${baseURL}/solana-action/${updateEvent.id}`;
+                return await this.eventBot.sendPhoto(
+                  query.message.chat.id,
+                  existingEvent.media,
+                  {
+                    parse_mode: 'HTML',
+                    caption: `Here is your BLINK link:\n<a href="${url}">${url}</a>`,
+                    reply_markup: {
+                      inline_keyboard: [
+                        [
+                          {
+                            text: `View on Dialect`,
+                            url: `https://dial.to/?action=solana-action:${baseURL}/solana-action/${updateEvent.id}`,
+                          },
+                        ],
+                        [
+                          {
+                            text: `Manage Event 🎟️`,
+                            callback_data: JSON.stringify({
+                              command: '/manageEvent',
+                              eventDetailsId: Number(
+                                updateEvent.eventDetailMarkdownId,
+                              ),
+                            }),
+                          },
+                          {
+                            text: '❌ Close',
+                            callback_data: JSON.stringify({
+                              command: '/close',
+                              eventDetailsId: Number(
+                                updateEvent.eventDetailMarkdownId,
+                              ),
+                            }),
+                          },
+                        ],
+                      ],
+                    },
+                  },
+                );
+              }
               const url = `${baseURL}/solana-action/${existingEvent.id}`;
-              return await this.eventBot.sendMessage(
+              return await this.eventBot.sendPhoto(
                 query.message.chat.id,
-                `Here is your BLINK link:\n<a href="${url}">${url}</a>`,
+                existingEvent.media,
                 {
                   parse_mode: 'HTML',
+                  caption: `Here is your BLINK link:\n<a href="${url}">${url}</a>`,
                   reply_markup: {
                     inline_keyboard: [
                       [
@@ -2160,6 +2242,50 @@ export class BotService {
 
         if (sentPreview) {
           console.log(sentPreview);
+        }
+      }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // if the user does not have any media
+  generateEventMedia = async (chatId, data) => {
+    try {
+      const media = await this.ticketService.generateMediaShot(data);
+      if (media) {
+        console.log('this is preview :', media);
+        const sentPreview = await this.eventBot.sendPhoto(chatId, media, {
+          parse_mode: 'HTML',
+          caption: `This is your event default flyer`,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: `Generate Ticket 🎟️\nBLInk`,
+                  callback_data: JSON.stringify({
+                    command: '/GenerateBlinkLink',
+                    eventDetailsId: Number(data.eventDetailMarkdownId),
+                  }),
+                },
+              ],
+              [
+                {
+                  text: '❌ Close',
+                  callback_data: JSON.stringify({
+                    command: '/close',
+                    eventDetailsId: Number(data.eventDetailMarkdownId),
+                  }),
+                },
+              ],
+            ],
+          },
+        });
+
+        if (sentPreview) {
+          console.log(sentPreview);
+          return sentPreview;
         }
       }
       return;

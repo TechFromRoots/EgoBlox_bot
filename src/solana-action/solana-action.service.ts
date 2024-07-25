@@ -17,14 +17,18 @@ import {
 import { DatabaseService } from 'src/database/database.service';
 
 const ADMIN_WALLET = new PublicKey(process.env.ADMIN_WALLET);
+const baseURL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://eventblink.xyz'
+    : 'http://localhost:3001';
 
 @Injectable()
 export class SolanaActionService {
   constructor(private readonly database: DatabaseService) {}
 
-  getAction = async (baseUrl: string, eventId: string) => {
+  getAction = async (eventId: string) => {
     try {
-      console.log(baseUrl);
+      console.log(baseURL);
       const eventTicket = await this.database.event.findFirst({
         where: { id: +eventId },
       });
@@ -32,7 +36,7 @@ export class SolanaActionService {
       if (eventTicket) {
         const payload: ActionGetResponse = {
           icon: eventTicket?.media
-            ? await new URL(`${baseUrl}/bot/${eventTicket.media}`).toString()
+            ? await new URL(`${baseURL}/bot/${eventTicket.media}`).toString()
             : `https://i.ibb.co/PxqQCTQ/eventblinkbot-high-resolution-logo.jpg`,
           title: eventTicket.eventName,
           description: eventTicket.description,
