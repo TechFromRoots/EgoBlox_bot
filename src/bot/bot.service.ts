@@ -1381,7 +1381,7 @@ export class BotService {
               });
 
               if (saveEvent) {
-                const url = `${baseURL}/solana-action/${saveEvent.id}`;
+                const url = `${baseURL}/solana-action?event=${saveEvent.id}`;
                 return await this.eventBot.sendPhoto(
                   query.message.chat.id,
                   saveEvent.media,
@@ -1393,7 +1393,7 @@ export class BotService {
                         [
                           {
                             text: `View on Dialect`,
-                            url: `https://dial.to/?action=solana-action:${baseURL}/solana-action/${saveEvent.id}`,
+                            url: `https://dial.to/?action=solana-action:${baseURL}/solana-action?event=${saveEvent.id}`,
                           },
                         ],
                         [
@@ -1446,7 +1446,7 @@ export class BotService {
                 },
               });
               if (updateEvent) {
-                const url = `${baseURL}/solana-action/${updateEvent.id}`;
+                const url = `${baseURL}/solana-action?event=${updateEvent.id}`;
                 return await this.eventBot.sendPhoto(
                   query.message.chat.id,
                   existingEvent.media,
@@ -1458,7 +1458,7 @@ export class BotService {
                         [
                           {
                             text: `View on Dialect`,
-                            url: `https://dial.to/?action=solana-action:${baseURL}/solana-action/${updateEvent.id}`,
+                            url: `https://dial.to/?action=solana-action:${baseURL}/solana-action?event=${updateEvent.id}`,
                           },
                         ],
                         [
@@ -1486,7 +1486,7 @@ export class BotService {
                   },
                 );
               }
-              const url = `${baseURL}/solana-action/${existingEvent.id}`;
+              const url = `${baseURL}/solana-action?event=${existingEvent.id}`;
               return await this.eventBot.sendPhoto(
                 query.message.chat.id,
                 existingEvent.media,
@@ -1498,7 +1498,7 @@ export class BotService {
                       [
                         {
                           text: `View on Dialect`,
-                          url: `https://dial.to/?action=solana-action:${baseURL}/solana-action/${existingEvent.id}`,
+                          url: `https://dial.to/?action=solana-action:${baseURL}/solana-action?event=${existingEvent.id}`,
                         },
                       ],
                       [

@@ -7,5 +7,6 @@ import { DatabaseModule } from 'src/database/database.module';
   imports: [DatabaseModule],
   controllers: [SolanaActionController],
   providers: [SolanaActionService],
+  exports: [SolanaActionService],
 })
 export class SolanaActionModule {}
