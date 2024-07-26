@@ -1,73 +1,77 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# EventBlink Bot
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+EventBlink Bot is a Telegram bot that helps event organizers create event tickets in the form of Blinks and manage events. It provides tools for monitoring ticket sales and controlling ticket availability.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- **Streamlined Ticket Creation**: Quickly generate and distribute event tickets as Blinks.
+- **Efficient Event Management**: Centralized tools for managing events and tracking ticket sales.
+- **Automated Ticket Sales Monitoring**: Automatically disables ticket sales once the set number of tickets is reached.
+- **Enhanced Control for Organizers**: Set specific ticket quantities to manage event capacity.
+- **Convenient User Experience**: User-friendly interface within Telegram.
+- **Real-Time Updates and Notifications**: Stay informed with real-time sales and event metrics.
+- **Payment with SPL Tokens**: Accept payments using SPL tokens, providing a secure and efficient payment method.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Advantages Over Traditional Online Ticketing Platforms
 
-## Installation
+1. **Lower Costs**
+   - **Problem**: Traditional platforms often charge high fees for ticket sales.
+   - **Solution**: EventBlink Bot can reduce costs by utilizing Blinks.
 
-```bash
-$ npm install
-```
+2. **Enhanced Flexibility**
+   - **Problem**: Traditional platforms can be rigid with limited customization options.
+   - **Solution**: EventBlink Bot offers more flexibility in ticketing and event management, allowing organizers to customize their events as needed.
 
-## Running the app
+3. **Real-Time Updates**
+   - **Problem**: Delays in receiving updates on ticket sales and event status.
+   - **Solution**: EventBlink Bot provides real-time updates and notifications, keeping organizers informed instantly.
 
-```bash
-# development
-$ npm run start
+4. **Wider Reach**
+   - **Problem**: Limited reach due to platform-specific user bases.
+   - **Solution**: By using Telegram, EventBlink Bot taps into a global user base, increasing the potential reach of events.
 
-# watch mode
-$ npm run start:dev
+5. **Seamless User Experience**
+   - **Problem**: Traditional platforms may require users to navigate through multiple steps and pages.
+   - **Solution**: EventBlink Bot offers a streamlined and intuitive user experience directly within Telegram, reducing friction for users.
 
-# production mode
-$ npm run start:prod
-```
+6. **Payment with SPL Tokens**
+   - **Problem**: Traditional platforms may not support modern cryptocurrency payment methods.
+   - **Solution**: Organizers can accept payments using SPL tokens, providing a secure, efficient, and decentralized payment method.
 
-## Test
+## Social Media Integration
 
-```bash
-# unit tests
-$ npm run test
+- **Twitter Integration**: The bLink event links generated by EventBlink Bot can be shared on Twitter, making it easier for people to buy tickets with one click of a button. This enhances the visibility of your event and simplifies the ticket-purchasing process for attendees.
 
-# e2e tests
-$ npm run test:e2e
+## Problem Solved
 
-# test coverage
-$ npm run test:cov
-```
+EventBlink Bot addresses several common challenges faced by event organizers:
 
-## Support
+1. **Streamlined Ticket Creation**
+   - **Problem**: Manual ticket creation is time-consuming and error-prone.
+   - **Solution**: Automates ticket creation, making it fast and easy.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+2. **Efficient Event Management**
+   - **Problem**: Tracking ticket sales and managing inventory can be challenging.
+   - **Solution**: Provides centralized tools for efficient event management.
 
-## Stay in touch
+3. **Automated Ticket Sales Monitoring**
+   - **Problem**: Risk of overselling or underselling tickets.
+   - **Solution**: Automatically monitors sales and disables tickets once the target is reached.
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+4. **Enhanced Control for Organizers**
+   - **Problem**: Difficulty in controlling event capacity and ticket sales.
+   - **Solution**: Allows setting specific ticket quantities, ensuring better control.
 
-## License
+5. **Convenient User Experience**
+   - **Problem**: Traditional platforms can be cumbersome and not well-integrated.
+   - **Solution**: Offers a seamless experience within the widely-used Telegram platform.
 
-Nest is [MIT licensed](LICENSE).
+6. **Real-Time Updates and Notifications**
+   - **Problem**: Lack of real-time information on sales and event metrics.
+   - **Solution**: Provides real-time updates and notifications for informed decision-making.
+  
+     
+- **Link to Bot**: [EventBlink Bot](https://t.me/EventBlink_bot)
+- **MVP Demo**: [Watch Demo](https://youtu.be/Sduih-_LH3c?feature=shared)
+- **Sample Blink (Devnet)**: [View Sample](https://eventblink.xyz/solana-action?event=7)
+
