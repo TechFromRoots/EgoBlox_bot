@@ -9,8 +9,6 @@ import {
 } from '@nestjs/common';
 import type { Response, request } from 'express';
 import { AppService } from './app.service';
-import { SolanaActionService } from './solana-action/solana-action.service';
-import { ACTIONS_CORS_HEADERS, ActionsJson } from '@solana/actions';
 import { map } from 'rxjs';
 
 const baseURL =
@@ -20,10 +18,7 @@ const baseURL =
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly solanaActionService: SolanaActionService,
-  ) {}
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   getHello(): string {

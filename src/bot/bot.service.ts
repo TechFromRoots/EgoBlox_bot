@@ -4,47 +4,41 @@ import {
   welcomeMessageMarkup,
   allFeaturesMarkup,
   eventDetails_en,
-  pdFDetails,
 } from './markups';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { TicketService } from 'src/ticket/ticket.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from 'src/database/schemas/user.schema';
+import { Model } from 'mongoose';
 
 const token =
   process.env.NODE_ENV === 'production'
     ? process.env.TELEGRAM_TOKEN
     : process.env.TEST_TOKEN;
 
-const baseURL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://eventblink.xyz'
-    : 'http://localhost:3001';
-
 @Injectable()
 export class BotService {
-  private readonly eventBot: TelegramBot;
+  private readonly egoBot: TelegramBot;
   private logger = new Logger(BotService.name);
-  private pdfUrlUploadPrompt = {};
-  private pdfUploadPrompt = {};
-  private startedChatting = {};
-  private usedCodes = [];
 
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly ticketService: TicketService,
+    @InjectModel(User.name) private readonly UserModel: Model<User>,
   ) {
-    this.eventBot = new TelegramBot(token, { polling: true });
+    this.egoBot = new TelegramBot(token, { polling: true });
     // event listerner for incomning messages
-    this.eventBot.on('message', this.handleRecievedMessages);
+    this.egoBot.on('message', this.handleRecievedMessages);
 
     // event Listerner for button requests
-    this.eventBot.on('callback_query', this.handleButtonCommands);
+    this.egoBot.on('callback_query', this.handleButtonCommands);
   }
 
   handleRecievedMessages = async (msg: any) => {
     this.logger.debug(msg);
     try {
-      await this.eventBot.sendChatAction(msg.chat.id, 'typing');
+      await this.egoBot.sendChatAction(msg.chat.id, 'typing');
       // condition to differntiate between users booking inputs
       const session = await this.databaseService.session.findFirst({
         where: { chat_id: msg.chat.id },
@@ -77,7 +71,7 @@ export class BotService {
             const replyMarkup = {
               inline_keyboard: welcome.keyboard,
             };
-            await this.eventBot.sendMessage(msg.chat.id, welcome.message, {
+            await this.egoBot.sendMessage(msg.chat.id, welcome.message, {
               reply_markup: replyMarkup,
             });
           }
@@ -125,7 +119,7 @@ export class BotService {
           JSON.parse(latestSession.mediaPromptId)['messageId'].length !== 0
         ) {
           const fileId = msg.photo[msg.photo.length - 1].file_id;
-          const file = await this.eventBot.getFile(fileId);
+          const file = await this.egoBot.getFile(fileId);
           if (file) {
             // const filePath = file.file_path;
             // const fileUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
@@ -140,7 +134,7 @@ export class BotService {
             // const buffer = Buffer.from(arrayBuffer);
             // console.log('image response :', buffer);
 
-            // await this.eventBot.sendMessage(
+            // await this.egoBot.sendMessage(
             //   msg.chat.id,
             //   `Image received! You can download it from: ${fileId}`,
             // );
@@ -167,8 +161,8 @@ export class BotService {
                 latestSession.walletAddress,
                 latestSession.eventDetailMarkdownId,
               );
-              await this.eventBot.sendPhoto(msg.chat.id, fileId);
-              await this.eventBot.editMessageReplyMarkup(
+              await this.egoBot.sendPhoto(msg.chat.id, fileId);
+              await this.egoBot.editMessageReplyMarkup(
                 { inline_keyboard: markup.keyBoardMarkup },
                 {
                   chat_id: msg.chat.id,
@@ -184,7 +178,7 @@ export class BotService {
                 i++
               ) {
                 promises.push(
-                  await this.eventBot.deleteMessage(
+                  await this.egoBot.deleteMessage(
                     msg.chat.id,
                     JSON.parse(latestSession.mediaPromptId)['messageId'][i],
                   ),
@@ -197,7 +191,7 @@ export class BotService {
                 i++
               ) {
                 promises.push(
-                  await this.eventBot.deleteMessage(
+                  await this.egoBot.deleteMessage(
                     msg.chat.id,
                     JSON.parse(latestSession.userAnswerId)['messageId'][i],
                   ),
@@ -245,7 +239,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -259,7 +253,7 @@ export class BotService {
             i < JSON.parse(latestSession.startDatePromptId)['messageId'].length;
             i++
           ) {
-            await this.eventBot.deleteMessage(
+            await this.egoBot.deleteMessage(
               msg.chat.id,
               JSON.parse(latestSession.startDatePromptId)['messageId'][i],
             );
@@ -270,7 +264,7 @@ export class BotService {
             i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
             i++
           ) {
-            await this.eventBot.deleteMessage(
+            await this.egoBot.deleteMessage(
               msg.chat.id,
               JSON.parse(latestSession.userAnswerId)['messageId'][i],
             );
@@ -304,7 +298,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -319,7 +313,7 @@ export class BotService {
             i < JSON.parse(latestSession.endDatePromptId)['messageId'].length;
             i++
           ) {
-            await this.eventBot.deleteMessage(
+            await this.egoBot.deleteMessage(
               msg.chat.id,
               JSON.parse(latestSession.endDatePromptId)['messageId'][i],
             );
@@ -330,7 +324,7 @@ export class BotService {
             i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
             i++
           ) {
-            await this.eventBot.deleteMessage(
+            await this.egoBot.deleteMessage(
               msg.chat.id,
               JSON.parse(latestSession.userAnswerId)['messageId'][i],
             );
@@ -380,7 +374,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.startTimePromptId)['messageId'][i],
                 ),
@@ -393,7 +387,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -417,7 +411,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -452,7 +446,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -466,7 +460,7 @@ export class BotService {
             i < JSON.parse(latestSession.endTimePromptId)['messageId'].length;
             i++
           ) {
-            await this.eventBot.deleteMessage(
+            await this.egoBot.deleteMessage(
               msg.chat.id,
               JSON.parse(latestSession.endTimePromptId)['messageId'][i],
             );
@@ -477,7 +471,7 @@ export class BotService {
             i < JSON.parse(latestSession.userAnswerId)['messageId'].length;
             i++
           ) {
-            await this.eventBot.deleteMessage(
+            await this.egoBot.deleteMessage(
               msg.chat.id,
               JSON.parse(latestSession.userAnswerId)['messageId'][i],
             );
@@ -522,7 +516,7 @@ export class BotService {
               latestSession.eventDetailMarkdownId,
             );
 
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -539,7 +533,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.eventNamePromptId)['messageId'][i],
                 ),
@@ -552,7 +546,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -587,7 +581,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -604,7 +598,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.descriptionPromptId)['messageId'][i],
                 ),
@@ -617,7 +611,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -651,7 +645,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -668,7 +662,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.locationPromptId)['messageId'][i],
                 ),
@@ -681,7 +675,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -715,7 +709,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -731,7 +725,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.contactPromptId)['messageId'][i],
                 ),
@@ -744,7 +738,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -778,7 +772,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -794,7 +788,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.emailPromptId)['messageId'][i],
                 ),
@@ -807,7 +801,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -841,7 +835,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -857,7 +851,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.pricePromptId)['messageId'][i],
                 ),
@@ -870,7 +864,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -904,7 +898,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -921,7 +915,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.categoryPromptId)['messageId'][i],
                 ),
@@ -934,7 +928,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -969,7 +963,7 @@ export class BotService {
               latestSession.walletAddress,
               latestSession.eventDetailMarkdownId,
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -987,7 +981,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.numberOfTicketsPromptId)[
                     'messageId'
@@ -1002,7 +996,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -1036,7 +1030,7 @@ export class BotService {
               latestSession.media,
               msg.text.trim(),
             );
-            await this.eventBot.editMessageReplyMarkup(
+            await this.egoBot.editMessageReplyMarkup(
               { inline_keyboard: markup.keyBoardMarkup },
               {
                 chat_id: msg.chat.id,
@@ -1054,7 +1048,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.walletAddressPromptId)['messageId'][
                     i
@@ -1069,7 +1063,7 @@ export class BotService {
               i++
             ) {
               promises.push(
-                await this.eventBot.deleteMessage(
+                await this.egoBot.deleteMessage(
                   msg.chat.id,
                   JSON.parse(latestSession.userAnswerId)['messageId'][i],
                 ),
@@ -1082,7 +1076,7 @@ export class BotService {
       } catch (error) {
         console.error(error);
 
-        return await this.eventBot.sendMessage(
+        return await this.egoBot.sendMessage(
           msg.chat.id,
           `Processing command failed, please try again`,
         );
@@ -1126,12 +1120,12 @@ export class BotService {
     try {
       switch (command) {
         case '/menu':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           await this.sendAllFeature(chatId);
           return;
 
         case '/createEvent':
-          await this.eventBot.sendChatAction(query.message.chat.id, 'typing');
+          await this.egoBot.sendChatAction(query.message.chat.id, 'typing');
           const sessionExist1 = await this.databaseService.session.findMany({
             where: {
               chat_id: chatId,
@@ -1248,88 +1242,88 @@ export class BotService {
           return await this.createEvent(query.message.chat.id);
 
         case '/eventName':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.eventNameSelection(query.message.chat.id);
 
         case '/eventDescription':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.eventDescriptionSelection(query.message.chat.id);
 
         case '/eventLocation':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.eventLocationSelection(query.message.chat.id);
 
         case '/eventStartDate':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.eventStartDateSelection(query.message.chat.id);
 
         case '/eventTime':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.eventStartTimeSelection(query.message.chat.id);
 
         case '/eventEndDate':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.eventEndDateSelection(query.message.chat.id);
 
         case '/eventEndTime':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.eventEndTimeSelection(query.message.chat.id);
 
         case '/contact':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.contactSelection(query.message.chat.id);
 
         case '/email':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.emailSelection(query.message.chat.id);
 
         case '/ticketPrice':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.priceSelection(query.message.chat.id);
 
         case '/ticketCategory':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.categorySelection(query.message.chat.id);
 
         case '/ticketNumber':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.ticketNumberSelection(query.message.chat.id);
 
         case '/eventMedia':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.mediaSelection(query.message.chat.id);
 
         case '/organizerWallet':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           return await this.walletSelection(query.message.chat.id);
 
         case '/preview':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           try {
             const session = await this.databaseService.session.findFirst({
               where: { chat_id: chatId },
             });
             if (session) {
-              await this.eventBot.sendChatAction(chatId, 'typing');
+              await this.egoBot.sendChatAction(chatId, 'typing');
               return await this.previewEventDetails(
                 query.message.chat.id,
                 session,
               );
             }
-            return await this.eventBot.sendMessage(
+            return await this.egoBot.sendMessage(
               query.message.chat.id,
               `No Event Data to preview`,
             );
           } catch (error) {
             console.log(error);
-            return await this.eventBot.sendMessage(
+            return await this.egoBot.sendMessage(
               query.message.chat.id,
               `Processing command failed, please try again`,
             );
           }
 
         case '/GenerateBlinkLink':
-          await this.eventBot.sendChatAction(chatId, 'typing');
+          await this.egoBot.sendChatAction(chatId, 'typing');
           try {
             const session = await this.databaseService.session.findFirst({
               where: {
@@ -1382,7 +1376,7 @@ export class BotService {
 
               if (saveEvent) {
                 const url = `${baseURL}/solana-action?event=${saveEvent.id}`;
-                return await this.eventBot.sendPhoto(
+                return await this.egoBot.sendPhoto(
                   query.message.chat.id,
                   saveEvent.media,
                   {
@@ -1447,7 +1441,7 @@ export class BotService {
               });
               if (updateEvent) {
                 const url = `${baseURL}/solana-action?event=${updateEvent.id}`;
-                return await this.eventBot.sendPhoto(
+                return await this.egoBot.sendPhoto(
                   query.message.chat.id,
                   existingEvent.media,
                   {
@@ -1487,7 +1481,7 @@ export class BotService {
                 );
               }
               const url = `${baseURL}/solana-action?event=${existingEvent.id}`;
-              return await this.eventBot.sendPhoto(
+              return await this.egoBot.sendPhoto(
                 query.message.chat.id,
                 existingEvent.media,
                 {
@@ -1526,13 +1520,13 @@ export class BotService {
                 },
               );
             }
-            return await this.eventBot.sendMessage(
+            return await this.egoBot.sendMessage(
               query.message.chat.id,
               `Error Generating Blink, try again`,
             );
           } catch (error) {
             console.log(error);
-            return await this.eventBot.sendMessage(
+            return await this.egoBot.sendMessage(
               query.message.chat.id,
               `Processing command failed, please try again`,
             );
@@ -1540,33 +1534,33 @@ export class BotService {
 
         // close opened markup and delete result
         case '/closedelete':
-          await this.eventBot.sendChatAction(query.message.chat.id, 'typing');
+          await this.egoBot.sendChatAction(query.message.chat.id, 'typing');
           await this.databaseService.session.deleteMany({
             where: { chat_id: chatId },
           });
           //Number(bookingDetailsDbId)
-          return await this.eventBot.deleteMessage(
+          return await this.egoBot.deleteMessage(
             query.message.chat.id,
             query.message.message_id,
           );
 
         case '/close':
-          await this.eventBot.sendChatAction(query.message.chat.id, 'typing');
-          return await this.eventBot.deleteMessage(
+          await this.egoBot.sendChatAction(query.message.chat.id, 'typing');
+          return await this.egoBot.deleteMessage(
             query.message.chat.id,
             query.message.message_id,
           );
 
         // case '/viewFiles':
         //   try {
-        //     await this.eventBot.sendMessage(chatId, '⏳ Request Processing .....');
+        //     await this.egoBot.sendMessage(chatId, '⏳ Request Processing .....');
         //     const allFiles = await this.databaseService.pdf.findMany({
         //       where: { owner: chatId },
         //     });
         //     if (allFiles) {
         //       const allFilesArray = [...allFiles];
         //       if (allFilesArray.length == 0) {
-        //         return this.eventBot.sendMessage(
+        //         return this.egoBot.sendMessage(
         //           chatId,
         //           '❓ Your PDF list is empty',
         //         );
@@ -1583,7 +1577,7 @@ export class BotService {
         //                 inline_keyboard: pdfDetail.keyboard,
         //               };
 
-        //               await this.eventBot.sendMessage(chatId, file.name, {
+        //               await this.egoBot.sendMessage(chatId, file.name, {
         //                 reply_markup: Markup,
         //               });
         //             } else {
@@ -1600,7 +1594,7 @@ export class BotService {
         //   }
 
         default:
-          return await this.eventBot.sendMessage(
+          return await this.egoBot.sendMessage(
             query.message.chat.id,
             `Processing command failed, please try again`,
           );
@@ -1617,7 +1611,7 @@ export class BotService {
         const replyMarkup = {
           inline_keyboard: allFeatures.keyboard,
         };
-        await this.eventBot.sendMessage(chatId, allFeatures.message, {
+        await this.egoBot.sendMessage(chatId, allFeatures.message, {
           parse_mode: 'HTML',
           reply_markup: replyMarkup,
         });
@@ -1632,7 +1626,7 @@ export class BotService {
     try {
       const markup = eventDetails_en('', '', '', '');
       const eventDetailMarkup = { inline_keyboard: markup.keyBoardMarkup };
-      const eventDetails = await this.eventBot.sendMessage(
+      const eventDetails = await this.egoBot.sendMessage(
         chatId,
         markup.message,
         { reply_markup: eventDetailMarkup },
@@ -1648,7 +1642,7 @@ export class BotService {
 
   fileUploadByUrlPrompt = async (chatId: any) => {
     try {
-      const uploadUrlPrompt = await this.eventBot.sendMessage(
+      const uploadUrlPrompt = await this.egoBot.sendMessage(
         chatId,
         'Input the PDF url 🔗: make sure it is viewable',
         { reply_markup: { force_reply: true } },
@@ -1665,7 +1659,7 @@ export class BotService {
 
   fileUploadPrompt = async (chatId: any) => {
     try {
-      const uploadPrompt = await this.eventBot.sendMessage(
+      const uploadPrompt = await this.egoBot.sendMessage(
         chatId,
         'Upload a PDF file 🔗: make sure it is less than 5mb',
         { reply_markup: { force_reply: true } },
@@ -1730,7 +1724,7 @@ export class BotService {
 
   eventNameSelection = async (chatId) => {
     try {
-      const eventNamePrompt = await this.eventBot.sendMessage(
+      const eventNamePrompt = await this.egoBot.sendMessage(
         chatId,
         '📝 Enter name of your event.',
         {
@@ -1764,7 +1758,7 @@ export class BotService {
 
   eventDescriptionSelection = async (chatId) => {
     try {
-      const eventDescriptionPrompt = await this.eventBot.sendMessage(
+      const eventDescriptionPrompt = await this.egoBot.sendMessage(
         chatId,
         '📝 Enter event description.',
         {
@@ -1798,7 +1792,7 @@ export class BotService {
 
   eventLocationSelection = async (chatId) => {
     try {
-      const eventLocationPrompt = await this.eventBot.sendMessage(
+      const eventLocationPrompt = await this.egoBot.sendMessage(
         chatId,
         '📍 Enter event location.',
         {
@@ -1832,7 +1826,7 @@ export class BotService {
 
   eventStartDateSelection = async (chatId) => {
     try {
-      const eventStartDatePrompt = await this.eventBot.sendMessage(
+      const eventStartDatePrompt = await this.egoBot.sendMessage(
         chatId,
         '📅 Enter event start date(dd/mm/yyyy). e.g 20/04/2024',
         {
@@ -1866,7 +1860,7 @@ export class BotService {
 
   eventStartTimeSelection = async (chatId) => {
     try {
-      const eventStartTimePrompt = await this.eventBot.sendMessage(
+      const eventStartTimePrompt = await this.egoBot.sendMessage(
         chatId,
         '🕛 Enter event start time. e.g: 12:00pm UTC',
         {
@@ -1900,7 +1894,7 @@ export class BotService {
 
   eventEndDateSelection = async (chatId) => {
     try {
-      const eventEndDatePrompt = await this.eventBot.sendMessage(
+      const eventEndDatePrompt = await this.egoBot.sendMessage(
         chatId,
         '📅 Enter event end date(dd/mm/yyyy). e.g 20/04/2024',
         {
@@ -1934,7 +1928,7 @@ export class BotService {
 
   eventEndTimeSelection = async (chatId) => {
     try {
-      const eventEndTimePrompt = await this.eventBot.sendMessage(
+      const eventEndTimePrompt = await this.egoBot.sendMessage(
         chatId,
         '🕛 Enter event end time. e.g: 01:00pm UTC',
         {
@@ -1968,7 +1962,7 @@ export class BotService {
 
   contactSelection = async (chatId) => {
     try {
-      const contactPrompt = await this.eventBot.sendMessage(
+      const contactPrompt = await this.egoBot.sendMessage(
         chatId,
         'Enter contacts or socials, saperate multiple inputs with a comma.',
         {
@@ -2002,7 +1996,7 @@ export class BotService {
 
   emailSelection = async (chatId) => {
     try {
-      const emailPrompt = await this.eventBot.sendMessage(
+      const emailPrompt = await this.egoBot.sendMessage(
         chatId,
         'Enter email.',
         {
@@ -2036,7 +2030,7 @@ export class BotService {
 
   priceSelection = async (chatId) => {
     try {
-      const pricePrompt = await this.eventBot.sendMessage(
+      const pricePrompt = await this.egoBot.sendMessage(
         chatId,
         'Enter Ticket price in sol.',
         {
@@ -2070,7 +2064,7 @@ export class BotService {
 
   categorySelection = async (chatId) => {
     try {
-      const categoryPrompt = await this.eventBot.sendMessage(
+      const categoryPrompt = await this.egoBot.sendMessage(
         chatId,
         'Enter Ticket category. e.g (VIP, EarlyBirds etc)',
         {
@@ -2104,7 +2098,7 @@ export class BotService {
 
   ticketNumberSelection = async (chatId) => {
     try {
-      const numberOfTicketsPrompt = await this.eventBot.sendMessage(
+      const numberOfTicketsPrompt = await this.egoBot.sendMessage(
         chatId,
         'Enter the number of Ticket you want to sell',
         {
@@ -2138,7 +2132,7 @@ export class BotService {
 
   mediaSelection = async (chatId) => {
     try {
-      const mediaPrompt = await this.eventBot.sendMessage(
+      const mediaPrompt = await this.egoBot.sendMessage(
         chatId,
         'upload a media for the ticket',
         {
@@ -2172,7 +2166,7 @@ export class BotService {
 
   walletSelection = async (chatId) => {
     try {
-      const walletPrompt = await this.eventBot.sendMessage(
+      const walletPrompt = await this.egoBot.sendMessage(
         chatId,
         'Enter your wallet Address',
         {
@@ -2209,36 +2203,32 @@ export class BotService {
       const ticketPreview = await this.ticketService.generateReviewShot(data);
       if (ticketPreview) {
         console.log('this is preview :', ticketPreview);
-        const sentPreview = await this.eventBot.sendPhoto(
-          chatId,
-          ticketPreview,
-          {
-            parse_mode: 'HTML',
-            caption: `Event Detail Preview`,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: `Generate Ticket 🎟️\nBLInk`,
-                    callback_data: JSON.stringify({
-                      command: '/GenerateBlinkLink',
-                      eventDetailsId: Number(data.eventDetailMarkdownId),
-                    }),
-                  },
-                ],
-                [
-                  {
-                    text: '❌ Close Preview',
-                    callback_data: JSON.stringify({
-                      command: '/close',
-                      eventDetailsId: Number(data.eventDetailMarkdownId),
-                    }),
-                  },
-                ],
+        const sentPreview = await this.egoBot.sendPhoto(chatId, ticketPreview, {
+          parse_mode: 'HTML',
+          caption: `Event Detail Preview`,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: `Generate Ticket 🎟️\nBLInk`,
+                  callback_data: JSON.stringify({
+                    command: '/GenerateBlinkLink',
+                    eventDetailsId: Number(data.eventDetailMarkdownId),
+                  }),
+                },
               ],
-            },
+              [
+                {
+                  text: '❌ Close Preview',
+                  callback_data: JSON.stringify({
+                    command: '/close',
+                    eventDetailsId: Number(data.eventDetailMarkdownId),
+                  }),
+                },
+              ],
+            ],
           },
-        );
+        });
 
         if (sentPreview) {
           console.log(sentPreview);
@@ -2256,7 +2246,7 @@ export class BotService {
       const media = await this.ticketService.generateMediaShot(data);
       if (media) {
         console.log('this is preview :', media);
-        const sentPreview = await this.eventBot.sendPhoto(chatId, media, {
+        const sentPreview = await this.egoBot.sendPhoto(chatId, media, {
           parse_mode: 'HTML',
           caption: `This is your event default flyer`,
           reply_markup: {

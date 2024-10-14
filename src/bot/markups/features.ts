@@ -4,26 +4,60 @@ export const allFeaturesMarkup = async () => {
     keyboard: [
       [
         {
-          text: 'Create an event Ticket 🎟️',
+          text: 'Create wallet 💳',
           callback_data: JSON.stringify({
-            command: '/createEvent',
+            command: '/createWallet',
             language: 'english',
           }),
         },
       ],
       [
         {
-          text: 'Manage Events',
+          text: 'Import wallet 🔗',
           callback_data: JSON.stringify({
-            command: '/manageEvents',
+            command: '/linkWallet',
+            language: 'english',
+          }),
+        },
+      ],
+      [
+        {
+          text: 'Pay bills 💡',
+          callback_data: JSON.stringify({
+            command: '/bills',
             language: 'english',
           }),
         },
         {
+          text: 'Send token 💸',
+          callback_data: JSON.stringify({
+            command: '/sendToken',
+            language: 'english',
+          }),
+        },
+      ],
+      [
+        {
+          text: 'Send token 💸',
+          callback_data: JSON.stringify({
+            command: '/bills',
+            language: 'english',
+          }),
+        },
+        {
+          text: 'Fund wallet 💵',
+          callback_data: JSON.stringify({
+            command: '/fundWallet',
+            language: 'english',
+          }),
+        },
+      ],
+      [
+        {
           text: '📢 Share',
           language: 'english',
           switch_inline_query:
-            'EventBlinkBot, your go-to bot for creating event ticket links on solana using Blinks.',
+            'EgoBlox, managing your crypto has never been easier!.',
         },
       ],
     ],

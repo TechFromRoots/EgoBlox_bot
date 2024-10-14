@@ -22,10 +22,12 @@
   "dependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/mongoose": "^10.0.10",
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^5.17.0",
     "@solana/actions": "^1.2.0",
     "@solana/web3.js": "^1.95.1",
+    "dotenv": "^16.4.5",
     "node-telegram-bot-api": "^0.66.0",
     "puppeteer": "^22.13.1",
     "reflect-metadata": "^0.1.13",
@@ -72,5 +74,6 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "packageManager": "pnpm@9.9.0+sha512.60c18acd138bff695d339be6ad13f7e936eea6745660d4cc4a776d5247c540d0edee1a563695c183a66eb917ef88f2b4feb1fc25f32a7adcadc7aaf3438e99c1"
 }
