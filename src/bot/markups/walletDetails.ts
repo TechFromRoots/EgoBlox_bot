@@ -40,6 +40,15 @@ export const wallerDetailsMarkup = async (address: any, type?: string) => {
       ],
       [
         {
+          text: 'Reset Pin',
+          callback_data: JSON.stringify({
+            command: '/resetPin',
+            language: 'english',
+          }),
+        },
+      ],
+      [
+        {
           text: 'Close ❌',
           callback_data: JSON.stringify({
             command: '/close',

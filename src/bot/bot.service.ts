@@ -888,6 +888,69 @@ export class BotService {
             );
           }
         }
+        // handle resetPin
+        else if (
+          isValidPin(msg.text!.trim()) &&
+          session!.walletPinPromptInput &&
+          session!.resetPins
+        ) {
+          try {
+            await this.egoBloxBot.sendChatAction(msg.chat.id, 'typing');
+            const pin = msg.text!.trim();
+            const hashedPin = await bcrypt.hash(pin, this.saltRounds);
+            if (user!.walletAddress && user!.defaultWalletDetails) {
+              // Concurrently decrypt the wallet and encrypt with new pin
+              const decryptedWallet = await this.walletService.decryptWallet(
+                process.env.DEFAULT_WALLET_PIN!,
+                user!.defaultWalletDetails,
+              );
+
+              const encryptedWalletDetails =
+                await this.walletService.encryptWallet(
+                  pin,
+                  decryptedWallet.privateKey,
+                );
+
+              // Save user wallet details
+              await this.UserModel.updateOne(
+                { chat_id: msg.chat.id },
+                {
+                  walletDetails: encryptedWalletDetails.json,
+                  pin: hashedPin,
+                  walletAddress: decryptedWallet.address,
+                },
+              );
+
+              await this.egoBloxBot.sendMessage(
+                msg.chat.id,
+                'Transaction pin successfully updated',
+              );
+            }
+
+            // Fetch session once
+            const latestSession = await this.SessionModel.findOne({
+              chat_id: msg.chat.id,
+            });
+
+            // Combine message deletion into one Promise.all
+            const deleteMessagesPromises = [
+              ...latestSession!.walletPinPromptInputId.map((id) =>
+                this.egoBloxBot.deleteMessage(msg.chat.id, id),
+              ),
+              ...latestSession!.userInputId.map((id) =>
+                this.egoBloxBot.deleteMessage(msg.chat.id, id),
+              ),
+            ];
+
+            // Delete all messages concurrently
+            await Promise.all(deleteMessagesPromises);
+
+            // Delete user session
+            await this.SessionModel.deleteMany({ chat_id: msg.chat.id });
+          } catch (error) {
+            console.error(error);
+          }
+        }
         //handle import wallet private key
         else if (
           session &&
@@ -1311,6 +1374,16 @@ export class BotService {
         case '/resetWallet':
           return this.showResetWalletWarning(chatId);
 
+        case '/resetPin':
+          const oldPin = await this.UserModel.find({ chat_id: chatId });
+          if (!oldPin) {
+            return await this.egoBloxBot.sendMessage(
+              query.message.chat.id,
+              `There was no pin associated with this wallet`,
+            );
+          }
+          return await this.promptWalletPin(chatId, 'resetPin');
+
         case '/confirmReset':
           // delete any existing session if any
           await this.SessionModel.deleteMany({ chat_id: chatId });
@@ -1483,6 +1556,23 @@ export class BotService {
         await this.SessionModel.create({
           chat_id: chatId,
           importWallet: true,
+          walletPinPromptInput: true,
+          walletPinPromptInputId: [pinPromptId.message_id],
+        });
+      } else if (context === 'resetPin') {
+        const pinPromptId = await this.egoBloxBot.sendMessage(
+          chatId,
+          'Please enter a new 4 digit pin for your wallet transactions ‼️ remember this pin ‼️',
+          {
+            reply_markup: {
+              force_reply: true,
+            },
+          },
+        );
+        await this.SessionModel.deleteMany({ chat_id: chatId });
+        await this.SessionModel.create({
+          chat_id: chatId,
+          resetPins: true,
           walletPinPromptInput: true,
           walletPinPromptInputId: [pinPromptId.message_id],
         });

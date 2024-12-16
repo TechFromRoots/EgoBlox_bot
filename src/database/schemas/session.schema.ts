@@ -42,6 +42,9 @@ export class Session {
   resetWallet: boolean;
 
   @Prop({ default: false })
+  resetPins: boolean;
+
+  @Prop({ default: false })
   changeWalletPin: boolean;
 
   @Prop({ default: false })
