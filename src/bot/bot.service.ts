@@ -2050,6 +2050,29 @@ export class BotService {
     }
   };
 
+  broadcastMessage = async () => {
+    try {
+
+      const users = await this.UserModel.find({});
+      users.forEach(async user => {
+        try {
+          await this.egoBloxBot.sendPhoto(
+            String(user.chat_id),
+            'https://i.ibb.co/Wy6gfkD/2025.jpg',
+            {
+              caption: `<b>Happy New Year from Egoblox!🎉🎉</b>\n\n2025 is here, and we're pumped to have you with us as we kick off another awesome year. Thanks for being part of the journey, it wouldn't be the same without you!\n\nThis year, we're keeping things simple, smooth, and even more helpful. Whether it's sending tokens, buying airtime, or handling your bills, we've got you covered!\n\nHere's to more convenience, more savings, and of course, more great moments! Let's make this year <strong>your year</strong>.\n\nWishing you a prosperous and joyful New Year!🎆`,
+              parse_mode: 'HTML'
+            }
+          );
+        } catch (error) {
+          console.log("There was an error sending message");
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // Functions to handle specific transaction types
   async handleSmartWalletTransaction(transaction, walletDetail) {
     switch (transaction.token) {

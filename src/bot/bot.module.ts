@@ -11,6 +11,7 @@ import { Session, SessionSchema } from 'src/database/schemas/session.schema';
 import { WalletModule } from 'src/wallet/wallet.module';
 import { BillsModule } from 'src/bills/bills.module';
 import { ContractInteractionModule } from 'src/paymaster-contract-interaction/contract-interaction.module';
+import { BotController } from './bot.controller';
 
 @Module({
   imports: [
@@ -25,5 +26,6 @@ import { ContractInteractionModule } from 'src/paymaster-contract-interaction/co
     MongooseModule.forFeature([{ name: Session.name, schema: SessionSchema }]),
   ],
   providers: [BotService],
+  controllers: [BotController],
 })
 export class BotModule {}
